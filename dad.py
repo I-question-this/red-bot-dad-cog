@@ -25,7 +25,7 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        iams = ["I'm", "I’m", "I am", "Im"]
+        iams = ["I'm", "I’m", "I am"]
 
         for i in iams:
             if message.content.find(i) != -1:
