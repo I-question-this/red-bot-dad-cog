@@ -1,7 +1,10 @@
 import discord
+import logging
 
 from redbot.core import commands
 from redbot.core.bot import Red
+
+log = logging.getLogger("red.dad")
 
 class Dad(commands.Cog):
     """Dad cog"""
@@ -22,11 +25,15 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        if message.content.find("I'm") != -1:
-            # Get their name
-            their_name = message.content[message.content.find("I'm")+4:]
-            # Construct our response
-            response = f"Hello \"{their_name}\", I'm Dad!"
-            # Send message
-            await message.channel.send(response)
+        iams = ["I'm", "I am", "Im"]
+
+        for i in iams:
+            if message.content.find(i) != -1:
+                # Get their name
+                their_name = message.content[message.content.find(i)+len(i)+1:]
+                # Construct our response
+                response = f"Hello \"{their_name}\", I'm Dad!"
+                # Send message
+                await message.channel.send(response)
+                return
 
