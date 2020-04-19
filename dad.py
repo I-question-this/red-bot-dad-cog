@@ -26,7 +26,7 @@ class Dad(commands.Cog):
             # Get their name
             their_name = message.content[message.content.find("I'm")+4:]
             # Construct our response
-            response = f"Hello {their_name}, I'm Dad!"
+            response = f"Hello \"{their_name}\", I'm Dad!"
             # Send message
             await message.channel.send(response)
 
