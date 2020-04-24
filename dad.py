@@ -25,12 +25,13 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        iams = ["I'm", "I’m", "I am"]
+        iams = ["i'm ", "im ", "i am "]
+        lower_message = message.content.lower()
 
         for i in iams:
-            if message.content.find(i) != -1:
+            if lower_message.find(i) != -1:
                 # Get their name
-                their_name = message.content[message.content.find(i)+len(i)+1:]
+                their_name = message.content[message.content.find(i)+len(i):]
                 # Construct our response
                 response = f"Hello \"{their_name}\", I'm Dad!"
                 # Send message
