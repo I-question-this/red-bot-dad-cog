@@ -25,7 +25,7 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        iams = ["i'm ", "im ", "i am "]
+        iams = ["i'm ", "i’m ", "i am ", "im ", "iam" ]
         lower_message = message.content.lower()
 
         for i in iams:
