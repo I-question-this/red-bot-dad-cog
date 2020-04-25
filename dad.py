@@ -59,7 +59,7 @@ class Dad(commands.Cog):
             mess = message.content.replace(".", "").replace(",", "").replace("?", "").replace("!","")
             for word in mess.split(" "):
                 if len(word) >= 3:
-                    if word[-2:] == "er":
+                    if word[-2:] == "er" and not word == "her":
                         # Construct our response
                         response = f"{word}, I barely know her!\n--Dad"
                         # Send message
