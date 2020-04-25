@@ -35,7 +35,7 @@ class Dad(commands.Cog):
         mess = " " + message.content
         lower_message = mess.lower()
         lower_message = " " + lower_message
-        iams = [" i'm ", " i’m ", " i am ", " im ", " iam "]
+        iams = [" i'm ", " i’m ", " i`m ", " i am ", " im ", " iam "]
 
         for i in iams:
             if lower_message.find(i) != -1:
