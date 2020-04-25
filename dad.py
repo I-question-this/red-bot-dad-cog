@@ -6,7 +6,8 @@ from redbot.core.bot import Red
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {
-    "change_nickname": False
+    "change_nickname": False,
+    "barely_know_her": False
 }
 
 class Dad(commands.Cog):
@@ -30,10 +31,7 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        return await self.check_for_dad_joke(message)
-
-    
-    async def check_for_dad_joke(self, message):
+        # Check for "I'm hungry" jokes
         mess = " " + message.content
         lower_message = mess.lower()
         lower_message = " " + lower_message
@@ -51,19 +49,47 @@ class Dad(commands.Cog):
                     except discord.Forbidden:
                         pass
                     
-                return await self.send_dad_joke(message, their_name)
+                # Construct our response
+                response = f"Hello \"{their_name}\", I'm Dad!"
+                # Send message
+                return await message.channel.send(response)
+
+        # Check for "better, I barely know her!"
+        if await self._conf.guild(message.channel.guild).barely_know_her():
+            mess = message.content.replace(".", "").replace(",", "").replace("?", "").replace("!","")
+            for word in mess.split(" "):
+                if len(word) >= 3:
+                    if word[-2:] == "er":
+                        # Construct our response
+                        response = f"{word}, I barely know her!\n--Dad"
+                        # Send message
+                        return await message.channel.send(response)
 
 
-    async def send_dad_joke(self, message, their_name):
-        # Construct our response
-        response = f"Hello \"{their_name}\", I'm Dad!"
-        # Send message
-        return await message.channel.send(response)
-
-
-    @commands.is_owner()
+    @commands.guild_only()
     @commands.command(name="toggle_nickname_change")
-    async def setup_nickname_change(self, ctx: commands.Context):
+    async def toggle_nickname_change(self, ctx: commands.Context):
+        """Rather users nicknames should be changed for "I'm" jokes"""
         await self._conf.guild(ctx.guild).change_nickname.set(
                 not await self._conf.guild(ctx.guild).change_nickname()) 
+        contents = dict(
+                title="Toggled Nickname Change",
+                description=f"Set 'nickname_change' to {await self._conf.guild(ctx.guild).change_nickname()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
+    @commands.guild_only()
+    @commands.command(name="toggle_barely_know_her")
+    async def toggle_barely_know_her(self, ctx: commands.Context):
+        """Rather "I barely know her" jokes should be made at all"""
+        await self._conf.guild(ctx.guild).barely_know_her.set(
+                not await self._conf.guild(ctx.guild).barely_know_her()) 
+        contents = dict(
+                title="Toggled Nickname Change",
+                description=f"Set 'barely_know_her' to {await self._conf.guild(ctx.guild).barely_know_her()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
 
