@@ -25,16 +25,20 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        iams = [" i'm ", " i’m ", " i am ", " im ", " iam "]
-        lower_message = message.content.lower()
+        return await self.check_for_dad_joke(message.channel, message.content)
+
+    
+    async def check_for_dad_joke(self, channel, message:str):
+        message = " " + message
+        lower_message = message.lower()
         lower_message = " " + lower_message
+        iams = [" i'm ", " i’m ", " i am ", " im ", " iam "]
 
         for i in iams:
             if lower_message.find(i) != -1:
                 # Get their name
-                mess = " " + message.content
-                their_name = mess[mess.find(i)+len(i):]
-                return await self.send_dad_joke(message.channel, their_name)
+                their_name = message[lower_message.find(i)+len(i)-1:]
+                return await self.send_dad_joke(channel, their_name)
 
 
     async def send_dad_joke(self, channel, their_name):
