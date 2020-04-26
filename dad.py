@@ -45,7 +45,11 @@ class Dad(commands.Cog):
                     try:
                         # CHANGE THEIR NAME
                         await message.author.edit(nick=their_name[:min(32,len(their_name))], reason="I'm Dad")
-                        their_name = message.author.mention
+                        new_name = message.author.mention
+                        if len(their_name) > 32:
+                            their_name = new_name + their_name[32:]
+                        else:
+                            their_name = new_name
                     except discord.Forbidden:
                         pass
                     
