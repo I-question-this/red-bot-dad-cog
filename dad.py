@@ -63,9 +63,9 @@ class Dad(commands.Cog):
             mess = message.content.replace(".", "").replace(",", "").replace("?", "").replace("!","")
             for word in mess.split(" "):
                 if len(word) >= 3:
-                    if word[-2:] == "er" and not word == "her":
+                    if word[-2:] == "er" and not word.lower() == "her":
                         # Construct our response
-                        response = f"{word}, I barely know her!\n--Dad"
+                        response = f"{word[:-2]}*her*, I barely know her!\n--Dad"
                         # Send message
                         return await message.channel.send(response)
 
