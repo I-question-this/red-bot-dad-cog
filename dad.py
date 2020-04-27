@@ -8,7 +8,8 @@ from redbot.core.bot import Red
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {
     "change_nickname": False,
-    "barely_know_her": False
+    "barely_know_her": True,
+    "i_am_dad": True
 }
 
 class Dad(commands.Cog):
@@ -88,7 +89,7 @@ class Dad(commands.Cog):
             return nickname
 
 
-    async def make_i_am_joke(self, message: discord.message) -> bool:
+    async def make_i_am_dad_joke(self, message: discord.message) -> bool:
         """Return True or False on success of joke.
 
         Parameters
@@ -192,9 +193,10 @@ class Dad(commands.Cog):
             return
 
         # Attempt an "I'm" joke
-        if await self.make_i_am_joke(message):
-            # It was made, so end
-            return
+        if await self._conf.guild(message.channel.guild).i_am_dad():
+            if await self.make_i_am_dad_joke(message):
+                # It was made, so end
+                return
 
         # Attempt an "I barely know her!" joke
         if await self._conf.guild(message.channel.guild).barely_know_her():
@@ -224,9 +226,21 @@ class Dad(commands.Cog):
         await self._conf.guild(ctx.guild).barely_know_her.set(
                 not await self._conf.guild(ctx.guild).barely_know_her()) 
         contents = dict(
-                title="Toggled Nickname Change",
+                title="Toggled \"Barely Know Her\" Jokes",
                 description=f"Set 'barely_know_her' to {await self._conf.guild(ctx.guild).barely_know_her()}"
                 )
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
 
+    @commands.guild_only()
+    @commands.command(name="toggle_i_am_dad")
+    async def toggle_i_am_dad(self, ctx: commands.Context):
+        """Rather 'Hello "hungry", I'm Dad!' jokes should be made at all"""
+        await self._conf.guild(ctx.guild).i_am_dad.set(
+                not await self._conf.guild(ctx.guild).i_am_dad()) 
+        contents = dict(
+                title="Toggled \"I'm Dad!\" Jokes",
+                description=f"Set 'i_am_dad' to {await self._conf.guild(ctx.guild).i_am_dad()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
