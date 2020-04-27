@@ -52,6 +52,11 @@ class Dad(commands.Cog):
                             their_name = new_name
                     except discord.Forbidden:
                         pass
+
+                # Check that "their_name" is not too long
+                # Real cap is 2000, but we'll be conservative.
+                if len(their_name) > 1980:
+                    their_name = their_name[:1980]
                     
                 # Construct our response
                 response = f"Hello \"{their_name}\", I'm Dad!"
