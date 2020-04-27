@@ -21,7 +21,7 @@ class Dad(commands.Cog):
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""ℹ️JⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭījƗ"""
-        m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌 ᛗμᶬṀꟿ̃℠"""
+        m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠"""
         self.iam = re.compile(f"""[\W][{i_variants}].*[{m_variants}][\W]+""")
         self.her = re.compile(r"""[\W][\w]+[eE][rR][sS\W]""")
 
@@ -194,7 +194,6 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        print(message.content)
         # Attempt an "I'm" joke
         if await self._conf.guild(message.channel.guild).i_am_dad():
             if await self.make_i_am_dad_joke(message):
