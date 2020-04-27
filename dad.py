@@ -1,5 +1,6 @@
 import discord
 import logging
+import re
 
 from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
@@ -18,6 +19,105 @@ class Dad(commands.Cog):
         self.bot = bot
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
+        self.iam = re.compile(r"""[\W][iI1|î¡][\s'`"’aA]*[mM][\W]+""")
+
+
+    def their_name(self, msg:str) -> str:
+        """Return "I'm hungry" name, such as "hungry"
+
+        Parameters
+        ----------
+        msg: str
+            Message sent by the user
+
+        Returns
+        -------
+        str
+            Their name, such as "hungry" in "I'm hungry"
+            It will be None if there is no match
+        """
+        # A leading space makes it easier to determine if 'I'm' is not part of a different word
+        msg = " " + msg
+        # Look for a match
+        match = self.iam.search(msg)
+        if match is None:
+            # There is no match
+            return None
+        elif match.end() == len(msg):
+            # There is a match, but there is nothing after it
+            return None
+        else:
+            # There is a valid match
+            return msg[match.end():]
+
+
+    async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
+        """Update the nickname for our son, and return it
+        If it doesn't have the correct permissions it will return nickname
+        with no changes, else it will be the mention string for the Member
+        plus the extra characters that couldn't fit in the nickname.
+
+        Parameters
+        ----------
+        son: discord.Member
+            Person to update the nickname of
+        nickname: str
+            Nickname to update our son to.
+
+        Returns
+        -------
+        str
+            Either the unchanged nickname, or the mention string of the author.
+        """
+        try:
+            # Change their nickname
+            await son.edit(nick=nickname[:min(32,len(nickname))], reason="I'm Dad")
+            new_name = son.mention
+            # Check if the name was longer than the character limit
+            if len(nickname) > 32:
+                # Append the extra characters to the mention string
+                nickname = new_name + nickname[32:]
+            else:
+                # No problem
+                nickname = new_name
+            # Return the result
+            return nickname
+        except discord.Forbidden:
+            # We lacked the permissions to do this, simply return the unaltered nickname
+            return nickname
+
+
+    async def make_i_am_joke(self, message: discord.message) -> bool:
+        """Return True or False on success of joke.
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to attempt a joke upon
+
+        Returns
+        -------
+        bool
+            Success of joke.
+        """
+        their_name = self.their_name(message.content)
+        if their_name is None:
+            # No joke was possible, stop
+            return False
+        else:
+            # Check if we can attempt to rename the author
+            if await self._conf.guild(message.channel.guild).change_nickname():
+                their_name = await self.update_sons_nickname(message.author, their_name)
+
+            # Check if their_name will make our message too long (> 2000 characters)
+            if len(their_name) > 1975:
+                their_name = f"{their_name[:1975]}..."
+            # Construct our response
+            response = f"Hello \"{their_name}\", I'm Dad!"
+            # Send message
+            await message.channel.send(response)
+            # Return success
+            return True
 
 
     @commands.Cog.listener()
@@ -31,37 +131,10 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        # Check for "I'm hungry" jokes
-        mess = " " + message.content
-        lower_message = mess.lower()
-        lower_message = " " + lower_message
-        iams = [" i'm ", " i’m ", " i`m ", " i am ", " im ", " iam "]
-
-        for i in iams:
-            if lower_message.find(i) != -1:
-                # Get their name
-                their_name = mess[lower_message.find(i)+len(i)-1:]
-                if await self._conf.guild(message.channel.guild).change_nickname():
-                    try:
-                        # CHANGE THEIR NAME
-                        await message.author.edit(nick=their_name[:min(32,len(their_name))], reason="I'm Dad")
-                        new_name = message.author.mention
-                        if len(their_name) > 32:
-                            their_name = new_name + their_name[32:]
-                        else:
-                            their_name = new_name
-                    except discord.Forbidden:
-                        pass
-
-                # Check that "their_name" is not too long
-                # Real cap is 2000, but we'll be conservative.
-                if len(their_name) > 1980:
-                    their_name = their_name[:1980]
-                    
-                # Construct our response
-                response = f"Hello \"{their_name}\", I'm Dad!"
-                # Send message
-                return await message.channel.send(response)
+        # Attempt an "I'm" joke
+        if await self.make_i_am_joke(message):
+            # It was made, so end
+            return
 
         # Check for "better, I barely know her!"
         if await self._conf.guild(message.channel.guild).barely_know_her():
