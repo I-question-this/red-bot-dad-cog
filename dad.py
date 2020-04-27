@@ -21,7 +21,7 @@ class Dad(commands.Cog):
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""JⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭījƗ"""
-        middle_variants = r"""\s'`eE"’aA‘＇ʾ’́՚ꞌ◌´ʹʿ΄᾿᾽́'ʻ̕‛′̓`ˊˈʹ "ʽꞌ̓‵̔_ˮ"""
+        middle_variants = r""".\s'`eE"’aA‘＇ʾ’́՚ꞌ◌´ʹʿ΄᾿᾽́'ʻ̕‛′̓`ˊˈʹ "ʽꞌ̓‵̔_ˮ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌 ᛗμᶬṀꟿ̃℠"""
         self.iam = re.compile(f"""[\W][{i_variants}][{middle_variants}]*[{m_variants}][\W]+""")
         self.her = re.compile(r"""[\W][\w]+[eE][rR][sS\W]""")
