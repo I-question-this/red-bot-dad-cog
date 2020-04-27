@@ -20,7 +20,7 @@ class Dad(commands.Cog):
         self.bot = bot
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
-        self.iam = re.compile(r"""[\W][iI1|î¡][\s'`"’aA]*[mM][\W]+""")
+        self.iam = re.compile(r"""[\W][iI1|î¡l][\s'`"’aA]*[mM][\W]+""")
         self.her = re.compile(r"""[\W][\w]+[eE][rR][sS\W]""")
 
 
