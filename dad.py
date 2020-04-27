@@ -20,6 +20,7 @@ class Dad(commands.Cog):
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
         self.iam = re.compile(r"""[\W][iI1|î¡][\s'`"’aA]*[mM][\W]+""")
+        self.her = re.compile(r"""[\W][\w]+[eE][rR][sS\W]""")
 
 
     def their_name(self, msg:str) -> str:
@@ -120,6 +121,65 @@ class Dad(commands.Cog):
             return True
 
 
+    def i_barely_know_her(self, msg:str) -> str:
+        """Return "<>her, I barely know her!" such as "Ducker" -> "duck"
+
+        Parameters
+        ----------
+        msg: str
+            Message sent by the user
+
+        Returns
+        -------
+        str
+            The <> in <>er, in all lowercase.
+        """
+        # A leading and trailing space helps in matching the words
+        msg = " " + msg + " "
+        # Look for matches, return the first valid one
+        for match in self.her.finditer(msg):
+            # Remove leading and trailing characters
+            _her = match.group()[1:-1].lower()
+            if _her == "her":
+                # If it's literally "her", then move on
+                continue
+            else:
+                # Proper match found, return it!
+                return _her[:-2]
+        # No proper match was found, return None
+        return None
+    
+
+    async def make_her_joke(self, message: discord.message) -> bool:
+        """Return True or False on success of joke.
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to attempt a joke upon
+
+        Returns
+        -------
+        bool
+            Success of joke.
+        """
+        _her = self.i_barely_know_her(message.content)
+        if _her is None:
+            # No joke was possible, stop
+            return False
+        else:
+            # Check if their_name will make our message too long (> 2000 characters)
+            if len(_her) > 1960:
+                # Replace part of middle with ellipse
+                _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
+            # Construct our response
+            response = f"{_her}*her*, I barely know her!\n--Dad"
+            # Send message
+            await message.channel.send(response)
+            # Return success
+            return True
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -136,16 +196,11 @@ class Dad(commands.Cog):
             # It was made, so end
             return
 
-        # Check for "better, I barely know her!"
+        # Attempt an "I barely know her!" joke
         if await self._conf.guild(message.channel.guild).barely_know_her():
-            mess = message.content.replace(".", "").replace(",", "").replace("?", "").replace("!","")
-            for word in mess.split(" "):
-                if len(word) >= 3:
-                    if word[-2:] == "er" and not word.lower() == "her":
-                        # Construct our response
-                        response = f"{word[:-2]}*her*, I barely know her!\n--Dad"
-                        # Send message
-                        return await message.channel.send(response)
+            if await self.make_her_joke(message):
+                # It was made, so end
+                return
 
 
     @commands.guild_only()
