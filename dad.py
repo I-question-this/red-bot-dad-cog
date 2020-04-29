@@ -22,7 +22,7 @@ class Dad(commands.Cog):
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""ℹ️JⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
-        self.iam = re.compile(f"""[\\W][{i_variants}][aAeE\\W]*[{m_variants}][\\W]+""")
+        self.iam = re.compile(f"""\\b[{i_variants}][\\W]*[aAeE]*[{m_variants}]\\b[\W]*""")
         self.her = re.compile(r"""[\w]+[eE][rR][sS]*\b""")
         self.herCheck = re.compile(r"""[hH][eE][rR][sS]*""")
 
@@ -42,7 +42,7 @@ class Dad(commands.Cog):
             It will be None if there is no match
         """
         # A leading space makes it easier to determine if 'I'm' is not part of a different word
-        msg = " " + msg
+        msg = msg
         # Look for a match
         match = self.iam.search(msg)
         if match is None:
