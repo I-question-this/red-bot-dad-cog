@@ -22,8 +22,9 @@ class Dad(commands.Cog):
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""ℹ️JⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
-        self.iam = re.compile(f"""[\\W][{i_variants}][aAeE\W]*[{m_variants}][\\W]+""")
-        self.her = re.compile(r"""[\W][\w]+[eE][rR][sS\W]""")
+        self.iam = re.compile(f"""[\\W][{i_variants}][aAeE\\W]*[{m_variants}][\\W]+""")
+        self.her = re.compile(r"""[\w]+[eE][rR][sS]*\b""")
+        self.herCheck = re.compile(r"""[hH][eE][rR][sS]*""")
 
 
     def their_name(self, msg:str) -> str:
@@ -137,18 +138,18 @@ class Dad(commands.Cog):
         str
             The <> in <>er, in all lowercase.
         """
-        # A leading and trailing space helps in matching the words
-        msg = " " + msg + " "
         # Look for matches, return the first valid one
         for match in self.her.finditer(msg):
-            # Remove leading and trailing characters
-            _her = match.group()[1:-1].lower()
-            if _her == "her":
+            _her = match.group()
+            if self.herCheck.match(_her):
                 # If it's literally "her", then move on
                 continue
             else:
                 # Proper match found, return it!
-                return _her[:-2]
+                if _her[-1].lower() == "s":
+                    return _her[:-3].lower()
+                else:
+                    return _her[:-2].lower()
         # No proper match was found, return None
         return None
     
