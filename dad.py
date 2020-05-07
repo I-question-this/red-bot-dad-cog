@@ -203,6 +203,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
+    @commands.admin()
     @commands.command(name="toggle_nickname_change")
     async def toggle_nickname_change(self, ctx: commands.Context):
         """Rather users nicknames should be changed for "I'm" jokes"""
@@ -217,6 +218,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
+    @commands.admin()
     @commands.command(name="toggle_barely_know_her")
     async def toggle_barely_know_her(self, ctx: commands.Context):
         """Rather "I barely know her" jokes should be made at all"""
@@ -231,6 +233,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
+    @commands.admin()
     @commands.command(name="toggle_i_am_dad")
     async def toggle_i_am_dad(self, ctx: commands.Context):
         """Rather 'Hello "hungry", I'm Dad!' jokes should be made at all"""
@@ -245,6 +248,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
+    @commands.admin()
     @commands.command(name="toggle_rank_joke")
     async def toggle_rank(self, ctx: commands.Context):
         """'That's a major inconvenience' -> MAJOR inconvenience **SALUTE**"""
