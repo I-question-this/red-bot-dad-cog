@@ -22,37 +22,8 @@ class Dad(commands.Cog):
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
-        self.iam = re.compile(f"""\\b[{i_variants}][\\W]*[ae]*[{m_variants}]\\b[\W]*""", re.IGNORECASE)
+        self.iam_re = re.compile(f"""(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)""", re.IGNORECASE)
         self.her_re = re.compile(r""".*(?P<her>\b((.*[^h])|(.+h))er[s]?\b).*""", re.IGNORECASE)
-
-
-    def their_name(self, msg:str) -> str:
-        """Return "I'm hungry" name, such as "hungry"
-
-        Parameters
-        ----------
-        msg: str
-            Message sent by the user
-
-        Returns
-        -------
-        str
-            Their name, such as "hungry" in "I'm hungry"
-            It will be None if there is no match
-        """
-        # A leading space makes it easier to determine if 'I'm' is not part of a different word
-        msg = msg
-        # Look for a match
-        match = self.iam.search(msg)
-        if match is None:
-            # There is no match
-            return None
-        elif match.end() == len(msg):
-            # There is a match, but there is nothing after it
-            return None
-        else:
-            # There is a valid match
-            return msg[match.end():]
 
 
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
@@ -104,11 +75,12 @@ class Dad(commands.Cog):
         bool
             Success of joke.
         """
-        their_name = self.their_name(message.content)
-        if their_name is None:
+        match = self.iam_re.search(message.content)
+        if match is None:
             # No joke was possible, stop
             return False
         else:
+            their_name = match.group("name")
             # Check if we can attempt to rename the author
             if await self._conf.guild(message.channel.guild).change_nickname():
                 their_name = await self.update_sons_nickname(message.author, their_name)
@@ -117,7 +89,7 @@ class Dad(commands.Cog):
             if len(their_name) > 1975:
                 their_name = f"{their_name[:1975]}..."
             # Construct our response
-            response = f"Hello \"{their_name}\", I'm Dad!"
+            response = f"Hello \"{their_name}\", {match.group('iam')} Dad!"
             # Send message
             await message.channel.send(response)
             # Return success
