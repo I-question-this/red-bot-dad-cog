@@ -1,15 +1,19 @@
 import discord
 import logging
+import os
+import random
 import re
 
 from redbot.core import checks, commands, Config
+from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {
     "change_nickname": False,
     "barely_know_her": True,
-    "i_am_dad": True
+    "i_am_dad": True,
+    "rank_joke": True
 }
 
 class Dad(commands.Cog):
@@ -24,6 +28,9 @@ class Dad(commands.Cog):
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
         self.iam_re = re.compile(f"""(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)""", re.IGNORECASE)
         self.her_re = re.compile(r""".*(?P<her>\b((.*[^h])|(.+h))er[s]?\b).*""", re.IGNORECASE)
+        ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
+                "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant"]
+        self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
 
 
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
@@ -131,6 +138,40 @@ class Dad(commands.Cog):
             return True
 
 
+    async def make_rank_joke(self, message: discord.message) -> bool:
+        """Return True or False on success of joke.
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to attempt a joke upon
+
+        Returns
+        -------
+        bool
+            Success of joke.
+        """
+        match = self.rank_re.search(message.content)
+        if match is None:
+            # No joke was possible, stop
+            return False
+        else:
+            # Construct our response
+            response = {}
+            response["title"] = f"{match.group('rank').capitalize()} {match.group('title').capitalize()}"
+            # Pick random salute gif
+            salute_dir = os.path.join(cog_data_path(), "Dad/salute")
+            gif_path = os.path.join(salute_dir, random.choice(os.listdir(salute_dir)))
+            salute_gif = discord.File(gif_path, filename="salute.gif")
+            # Construct embed
+            embed = discord.Embed.from_dict(response)
+            embed.set_image(url=f"attachment://{salute_gif.filename}")
+            # Send embed and salute gif
+            await message.channel.send(embed=embed, file=salute_gif)
+            # Return success
+            return True
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -151,6 +192,12 @@ class Dad(commands.Cog):
         # Attempt an "I barely know her!" joke
         if await self._conf.guild(message.channel.guild).barely_know_her():
             if await self.make_her_joke(message):
+                # It was made, so end
+                return
+
+        # Attempt a "rank" joke
+        if await self._conf.guild(message.channel.guild).rank_joke():
+            if await self.make_rank_joke(message):
                 # It was made, so end
                 return
 
@@ -182,6 +229,7 @@ class Dad(commands.Cog):
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
 
+
     @commands.guild_only()
     @commands.command(name="toggle_i_am_dad")
     async def toggle_i_am_dad(self, ctx: commands.Context):
@@ -194,3 +242,18 @@ class Dad(commands.Cog):
                 )
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
+
+
+    @commands.guild_only()
+    @commands.command(name="toggle_rank_joke")
+    async def toggle_rank(self, ctx: commands.Context):
+        """'That's a major inconvenience' -> MAJOR inconvenience **SALUTE**"""
+        await self._conf.guild(ctx.guild).rank_joke.set(
+                not await self._conf.guild(ctx.guild).rank_joke()) 
+        contents = dict(
+                title="Toggled \"Rank\" Jokes",
+                description=f"Set 'rank_joke' to {await self._conf.guild(ctx.guild).rank_joke()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
