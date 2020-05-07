@@ -23,8 +23,7 @@ class Dad(commands.Cog):
         i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
         self.iam = re.compile(f"""\\b[{i_variants}][\\W]*[ae]*[{m_variants}]\\b[\W]*""", re.IGNORECASE)
-        self.her = re.compile(r"""[\w]+[er][sS]*\b""", re.IGNORECASE)
-        self.herCheck = re.compile(r"""[her][sS]*""", re.IGNORECASE)
+        self.her_re = re.compile(r""".*(?P<her>\b((.*[^h])|(.+h))er[s]?\b).*""", re.IGNORECASE)
 
 
     def their_name(self, msg:str) -> str:
@@ -125,35 +124,6 @@ class Dad(commands.Cog):
             return True
 
 
-    def i_barely_know_her(self, msg:str) -> str:
-        """Return "<>her, I barely know her!" such as "Ducker" -> "duck"
-
-        Parameters
-        ----------
-        msg: str
-            Message sent by the user
-
-        Returns
-        -------
-        str
-            The <> in <>er, in all lowercase.
-        """
-        # Look for matches, return the first valid one
-        for match in self.her.finditer(msg):
-            _her = match.group()
-            if self.herCheck.match(_her):
-                # If it's literally "her", then move on
-                continue
-            else:
-                # Proper match found, return it!
-                if _her[-1].lower() == "s":
-                    return _her[:-3].lower()
-                else:
-                    return _her[:-2].lower()
-        # No proper match was found, return None
-        return None
-    
-
     async def make_her_joke(self, message: discord.message) -> bool:
         """Return True or False on success of joke.
 
@@ -167,11 +137,16 @@ class Dad(commands.Cog):
         bool
             Success of joke.
         """
-        _her = self.i_barely_know_her(message.content)
+        _her = self.her_re.match(message.content)
         if _her is None:
             # No joke was possible, stop
             return False
         else:
+            # Chuck the pattern, keep the match
+            _her = _her.groups("her")[1]
+            # Check if last letter is h
+            if _her[-1].lower() == 'h':
+                _her = _her[:-1]
             # Check if their_name will make our message too long (> 2000 characters)
             if len(_her) > 1960:
                 # Replace part of middle with ellipse
