@@ -27,9 +27,9 @@ class Dad(commands.Cog):
         i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
         self.iam_re = re.compile(f"""(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)""", re.IGNORECASE)
-        self.her_re = re.compile(r""".*(?P<her>\b((.*[^h])|(.+h))er[s]?\b).*""", re.IGNORECASE)
+        self.her_re = re.compile(r""".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*""", re.IGNORECASE)
         ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
-                "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant"]
+                "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
         self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
 
 
