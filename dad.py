@@ -172,6 +172,28 @@ class Dad(commands.Cog):
             return True
 
 
+    async def acknowledge_reference(self, message: discord.message):
+        """Acknowledge if a user mentioned this bot or a word meaning/containing dad
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to possibly acknowledge
+
+        """
+        async def _ack():
+            await message.add_reaction("😉")
+
+        if self.bot.user.mentioned_in(message):
+            await _ack()
+        elif "dad" in message.content.lower():
+            await _ack()
+        elif "daddy" in message.content.lower():
+            await _ack()
+        elif "papa" in message.content.lower():
+            await _ack()
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -182,6 +204,9 @@ class Dad(commands.Cog):
             return
         if await self.bot.is_automod_immune(message):
             return
+
+        # If 'dad' is mentioned, then acknowledge it
+        await self.acknowledge_reference(message)
 
         # Attempt an "I'm" joke
         if await self._conf.guild(message.channel.guild).i_am_dad():
