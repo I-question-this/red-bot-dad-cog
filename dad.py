@@ -131,7 +131,7 @@ class Dad(commands.Cog):
                 # Replace part of middle with ellipse
                 _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
             # Construct our response
-            response = f"{_her.title()}*her*, I barely know her!\n--Dad"
+            response = f"{_her.title()}*her*, I barely know her!"
             # Send message
             await message.channel.send(response)
             # Return success
