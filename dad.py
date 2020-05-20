@@ -185,13 +185,11 @@ class Dad(commands.Cog):
             await message.add_reaction("😉")
 
         if self.bot.user.mentioned_in(message):
-            await _ack()
-        elif "dad" in message.content.lower():
-            await _ack()
-        elif "daddy" in message.content.lower():
-            await _ack()
-        elif "papa" in message.content.lower():
-            await _ack()
+            return await _ack()
+
+        for dad_variant in ["dad", "father", "daddy", "papa"]:
+            if dad_variant in message.content.lower():
+                return await _ack()
 
 
     @commands.Cog.listener()
