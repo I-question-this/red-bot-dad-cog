@@ -31,6 +31,7 @@ class Dad(commands.Cog):
         ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
                 "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
         self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
+        self.dad_variants = ["dad", "father", "daddy", "papa"]
 
 
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
@@ -187,10 +188,9 @@ class Dad(commands.Cog):
         if self.bot.user.mentioned_in(message):
             return await _ack()
 
-        for dad_variant in ["dad", "father", "daddy", "papa"]:
+        for dad_variant in self.dad_variants:
             if dad_variant in message.content.lower():
                 return await _ack()
-
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
