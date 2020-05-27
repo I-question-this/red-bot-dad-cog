@@ -206,6 +206,12 @@ class Dad(commands.Cog):
         # If 'dad' is mentioned, then acknowledge it
         await self.acknowledge_reference(message)
 
+        # Attempt a "rank" joke
+        if await self._conf.guild(message.channel.guild).rank_joke():
+            if await self.make_rank_joke(message):
+                # It was made, so end
+                return
+
         # Attempt an "I'm" joke
         if await self._conf.guild(message.channel.guild).i_am_dad():
             if await self.make_i_am_dad_joke(message):
@@ -218,11 +224,6 @@ class Dad(commands.Cog):
                 # It was made, so end
                 return
 
-        # Attempt a "rank" joke
-        if await self._conf.guild(message.channel.guild).rank_joke():
-            if await self.make_rank_joke(message):
-                # It was made, so end
-                return
 
 
     @commands.guild_only()
