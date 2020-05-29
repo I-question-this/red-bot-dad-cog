@@ -2,6 +2,7 @@ import discord
 import logging
 import os
 import random
+random.seed()
 import re
 
 from redbot.core import checks, commands, Config
@@ -13,7 +14,8 @@ _DEFAULT_GUILD = {
     "change_nickname": False,
     "barely_know_her": True,
     "i_am_dad": True,
-    "rank_joke": True
+    "rank_joke": True,
+    "response_chance": 60
 }
 
 class Dad(commands.Cog):
@@ -192,6 +194,7 @@ class Dad(commands.Cog):
             if dad_variant in message.content.lower():
                 return await _ack()
 
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -203,27 +206,55 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
+        # Dad always notices when he's talked about
         # If 'dad' is mentioned, then acknowledge it
         await self.acknowledge_reference(message)
 
-        # Attempt a "rank" joke
-        if await self._conf.guild(message.channel.guild).rank_joke():
-            if await self.make_rank_joke(message):
-                # It was made, so end
-                return
+        # Does Dad notice the joke?
+        if random.randrange(0,100) < await self._conf.guild(message.channel.guild).response_chance():
+            # Attempt a "rank" joke
+            if await self._conf.guild(message.channel.guild).rank_joke():
+                if await self.make_rank_joke(message):
+                    # It was made, so end
+                    return
 
-        # Attempt an "I'm" joke
-        if await self._conf.guild(message.channel.guild).i_am_dad():
-            if await self.make_i_am_dad_joke(message):
-                # It was made, so end
-                return
+            # Attempt an "I'm" joke
+            if await self._conf.guild(message.channel.guild).i_am_dad():
+                if await self.make_i_am_dad_joke(message):
+                    # It was made, so end
+                    return
 
-        # Attempt an "I barely know her!" joke
-        if await self._conf.guild(message.channel.guild).barely_know_her():
-            if await self.make_her_joke(message):
-                # It was made, so end
-                return
+            # Attempt an "I barely know her!" joke
+            if await self._conf.guild(message.channel.guild).barely_know_her():
+                if await self.make_her_joke(message):
+                    # It was made, so end
+                    return
 
+
+    @commands.guild_only()
+    @commands.admin()
+    @commands.command(name="set_response_chance")
+    async def set_response_chance(self, ctx: commands.Context, response_chance:int):
+        """Response chance for jokes.
+
+        Parameters
+        ----------
+        response_chance: int
+            The chance that Dad will respond.
+        """
+        if 0 < response_chance <= 100:
+            await self._conf.guild(ctx.guild).response_chance.set(response_chance)
+            contents = dict(
+                    title="Set Response Chance: Success",
+                    description=f"Response chance set to {response_chance}%"
+                    )
+        else:
+            contents = dict(
+                    title="Set Response Chance: Failure",
+                    description=f"Response chance has to be (0,100], which is not {response_chance}"
+                    )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
 
 
     @commands.guild_only()
