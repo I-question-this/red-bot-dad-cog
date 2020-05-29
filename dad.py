@@ -258,10 +258,23 @@ class Dad(commands.Cog):
         if self.bot.user.mentioned_in(message):
             for shut_up_variant in self.shut_up_variants:
                 if shut_up_variant in message.content.lower():
-                    minutes = 5
-                    self.shut_up(message, datetime.timedelta(seconds=minutes*60))
-                    await message.channel.send(
-                            f"Okay son, I'll leave you alone for {minutes} minutes")
+                    # Check if admin
+                    admin = await self.bot.is_owner(message.author)
+                    admin = admin or message.guild.owner == message.author
+                    member_snowflakes = message.author._roles
+                    guild_settings = self.bot._config.guild(message.guild)
+                    for snowflake in await guild_settings.admin_role():
+                        if member_snowflakes.has(snowflake):
+                            admin = True
+                    # Respond
+                    if admin:
+                        minutes = 5
+                        self.shut_up(message, datetime.timedelta(seconds=minutes*60))
+                        await message.channel.send(
+                                f"Okay son, I'll leave you alone for {minutes} minutes")
+                    else:
+                        await message.channel.send("No son, I am the boss")
+
 
 
     @commands.Cog.listener()
@@ -275,13 +288,14 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
+
+        # Is a user requesting quiet time?
+        await self.told_to_shut_up(message)
+
         # Is Dad allowed to talk?
         if self.if_shut_up(message):
             # Nope
             return 
-
-        # Is a user requesting quiet time?
-        await self.told_to_shut_up(message)
 
         # Dad always notices when he's talked about
         # If 'dad' is mentioned, then acknowledge it
