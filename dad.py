@@ -75,7 +75,7 @@ class Dad(commands.Cog):
             return nickname
 
 
-    async def make_i_am_dad_joke(self, message: discord.message) -> bool:
+    async def make_i_am_dad_joke(self, message: discord.Message) -> bool:
         """Return True or False on success of joke.
 
         Parameters
@@ -109,7 +109,7 @@ class Dad(commands.Cog):
             return True
 
 
-    async def make_her_joke(self, message: discord.message) -> bool:
+    async def make_her_joke(self, message: discord.Message) -> bool:
         """Return True or False on success of joke.
 
         Parameters
@@ -144,7 +144,7 @@ class Dad(commands.Cog):
             return True
 
 
-    async def make_rank_joke(self, message: discord.message) -> bool:
+    async def make_rank_joke(self, message: discord.Message) -> bool:
         """Return True or False on success of joke.
 
         Parameters
@@ -178,7 +178,7 @@ class Dad(commands.Cog):
             return True
 
 
-    async def acknowledge_reference(self, message: discord.message):
+    async def acknowledge_reference(self, message: discord.Message):
         """Acknowledge if a user mentioned this bot or a word meaning/containing dad
 
         Parameters
@@ -246,7 +246,7 @@ class Dad(commands.Cog):
 
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.message):
+    async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
             return
         author = message.author
