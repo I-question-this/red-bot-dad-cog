@@ -37,6 +37,7 @@ class Dad(commands.Cog):
                 "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
         self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
         self.dad_variants = ["dad", "father", "daddy", "papa"]
+        self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
@@ -245,6 +246,24 @@ class Dad(commands.Cog):
         return await ctx.send(embed=embed)
 
 
+    async def told_to_shut_up(self, message: discord.Message):
+        """Did a user mention Dad, and tell him to shut up?
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to possibly be told to shut up in.
+
+        """
+        if self.bot.user.mentioned_in(message):
+            for shut_up_variant in self.shut_up_variants:
+                if shut_up_variant in message.content.lower():
+                    minutes = 5
+                    self.shut_up(message, datetime.timedelta(seconds=minutes*60))
+                    await message.channel.send(
+                            f"Okay son, I'll leave you alone for {minutes} minutes")
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -260,6 +279,9 @@ class Dad(commands.Cog):
         if self.if_shut_up(message):
             # Nope
             return 
+
+        # Is a user requesting quiet time?
+        await self.told_to_shut_up(message)
 
         # Dad always notices when he's talked about
         # If 'dad' is mentioned, then acknowledge it
