@@ -1,3 +1,5 @@
+from collections import defaultdict
+import datetime
 import discord
 import logging
 import os
@@ -15,7 +17,7 @@ _DEFAULT_GUILD = {
     "barely_know_her": True,
     "i_am_dad": True,
     "rank_joke": True,
-    "response_chance": 60
+    "response_chance": 60,
 }
 
 class Dad(commands.Cog):
@@ -24,6 +26,7 @@ class Dad(commands.Cog):
     def __init__(self, bot: Red):
         super().__init__()
         self.bot = bot
+        self.shut_up_until = defaultdict(lambda: None)
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
         i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
@@ -195,6 +198,53 @@ class Dad(commands.Cog):
                 return await _ack()
 
 
+    # Commands for telling Dad Bot to shut up
+    def shut_up(self, ctx: commands.Context, shut_up_time:datetime.timedelta):
+        """Tell Dad to shut up in this guild for the specified time.
+
+        Parameters
+        ----------
+        shut_up_time: datetime.timedelta
+            The amount of time to be quiet.
+        """
+        self.shut_up_until[ctx.guild.id] = datetime.datetime.now() + shut_up_time
+
+    def if_shut_up(self, ctx: commands.Context):
+        # Get shut up time
+        shut_up_time = self.shut_up_until[ctx.guild.id]
+        # If shut up time is not None
+        if shut_up_time is not None:
+            # Dad was told to shut up, but can he talk now?
+            if datetime.datetime.now() > shut_up_time:
+                # He can talk now, so erase the shut up until time
+                self.shut_up_until[ctx.guild.id] = None
+                return False
+            else:
+                # Dad is still in time out
+                return True
+
+
+    @commands.guild_only()
+    @commands.admin()
+    @commands.command(name="shut_up_dad")
+    async def shut_up_dad(self, ctx: commands.Context, minutes:int):
+        """Admin command for shutting Dad up
+
+        Parameters
+        ----------
+        minutes: int
+            Number of minutes to tell Dad to shut up.
+        """
+        self.shut_up(ctx, datetime.timedelta(seconds=60*minutes))
+
+        contents = dict(
+                title="Okay Boomer",
+                description=f"Dad will be quit for {minutes} minutes"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -205,6 +255,11 @@ class Dad(commands.Cog):
             return
         if await self.bot.is_automod_immune(message):
             return
+
+        # Is Dad allowed to talk?
+        if self.if_shut_up(message):
+            # Nope
+            return 
 
         # Dad always notices when he's talked about
         # If 'dad' is mentioned, then acknowledge it
