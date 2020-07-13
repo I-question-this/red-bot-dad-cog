@@ -13,11 +13,13 @@ from redbot.core.bot import Red
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {
-    "change_nickname": False,
     "barely_know_her": True,
+    "change_nickname": False,
     "i_am_dad": True,
     "rank_joke": True,
     "response_chance": 60,
+    "request_help": False,
+    "request_help_chance": 1
 }
 
 class Dad(commands.Cog):
@@ -56,6 +58,22 @@ class Dad(commands.Cog):
         ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
                 "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
         self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
+        # Request Help Data
+        self.request_help_method = [
+                "before dinner, please",
+                "go",
+                "help me",
+                "if you want your allowance, "
+            ]
+        self.request_help_tasks = [
+                "clean up the yard",
+                "clean your room",
+                "fold the laundry",
+                "mow the lawn",
+                "rake the leaves",
+                "walk the dog",
+                "wash the car"
+            ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
@@ -199,6 +217,22 @@ class Dad(commands.Cog):
             return True
 
 
+    async def request_help(self, user:discord.User, channel:discord.TextChannel):
+        """Request help from a user
+
+        Parameters
+        ----------
+        user: discord.User
+            User to request help from.
+        channel: discord.TextChannel
+            Channel to send the message in.
+        """
+        method = random.choice(self.request_help_method)
+        task = random.choice(self.request_help_tasks)
+        msg = f"{user.mention} {method} {task}."
+        await channel.send(msg)
+
+
     async def set_random_dad_presence(self):
         act, emoji = random.choice(self.dad_presences)
         # Set up for if Discord eventually allows Custom Activities for bots
@@ -315,7 +349,7 @@ class Dad(commands.Cog):
         await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
-        if random.randrange(0,100) < await self._conf.guild(message.channel.guild).response_chance():
+        if random.randint(1,100) <= await self._conf.guild(message.channel.guild).response_chance():
             # Attempt a "rank" joke
             if await self._conf.guild(message.channel.guild).rank_joke():
                 if await self.make_rank_joke(message):
@@ -333,6 +367,10 @@ class Dad(commands.Cog):
                 if await self.make_her_joke(message):
                     # It was made, so end
                     return
+        
+        # No joke was made, but should we request help?
+        if random.randint(1,100) <= await self._conf.guild(message.channel.guild).request_help_chance():
+            await self.request_help(message.author, message.channel)
 
 
     @commands.Cog.listener()
@@ -367,6 +405,31 @@ class Dad(commands.Cog):
     @commands.group()
     async def dad_settings(self, ctx: commands.Context) -> None:
         """Admin commands"""
+
+
+    @dad_settings.command(name="set_request_help_chance")
+    async def set_request_help_chance(self, ctx: commands.Context, 
+            request_help_chance:int):
+        """Response chance for jokes.
+
+        Parameters
+        ----------
+        request_help_chance: int
+            The chance that Dad will request help after receiving a message.
+        """
+        if 0 < request_help_chance <= 100:
+            await self._conf.guild(ctx.guild).request_help_chance.set(request_help_chance)
+            contents = dict(
+                    title="Set Request Help Chance: Success",
+                    description=f"Request help chance set to {request_help_chance}%"
+                    )
+        else:
+            contents = dict(
+                    title="Set Request Help Chance: Failure",
+                    description=f"Request help chance has to be (0,100], which is not {response_chance}"
+                    )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
 
 
     # Set commands
@@ -442,6 +505,19 @@ class Dad(commands.Cog):
         contents = dict(
                 title="Toggled \"Rank\" Jokes",
                 description=f"Set 'rank_joke' to {await self._conf.guild(ctx.guild).rank_joke()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
+    @dad_settings.command(name="toggle_request_help")
+    async def toggle_request_help(self, ctx: commands.Context):
+        """Toggles requesting help from guild members for dad tasks"""
+        await self._conf.guild(ctx.guild).request_help.set(
+                not await self._conf.guild(ctx.guild).request_help()) 
+        contents = dict(
+                title="Toggled Request Help",
+                description=f"Set 'request_help' to {await self._conf.guild(ctx.guild).request_help()}"
                 )
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
