@@ -234,6 +234,7 @@ class Dad(commands.Cog):
 
 
     async def set_random_dad_presence(self):
+        """Set a random dad-like presence"""
         act, emoji = random.choice(self.dad_presences)
         # Set up for if Discord eventually allows Custom Activities for bots
         name = f"{act} {emoji}"
