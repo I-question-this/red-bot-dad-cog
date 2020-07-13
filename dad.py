@@ -24,19 +24,38 @@ class Dad(commands.Cog):
     """Dad cog"""
 
     def __init__(self, bot: Red):
+        # Setup
         super().__init__()
         self.bot = bot
         self.shut_up_until = defaultdict(lambda: None)
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
+        # Dad Presence Data
+        self.dad_presences = [
+                ("Balance check book", "🏦"),
+                ("Go to work", "🏢"),
+                ("Grill steaks", "🥩"),
+                ("Mow lawn", "🌿"),
+                ("Rake leaves", "🍁"),
+                ("Sleep in chair", "😴"),
+                ("Sort ties", "👔"),
+                ("Spray for weeds", "🌿"),
+                ("Trim hedges", "🪚"),
+                ("Walk dog", "🐕"),
+                ("Watch History Channel", "📺")
+            ]
+        # Dad Variants data
+        self.dad_variants = ["dad", "father", "daddy", "papa"]
+        # I'm Hungry Joke Daa
         i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
         m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
         self.iam_re = re.compile(f"""(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)""", re.IGNORECASE)
         self.her_re = re.compile(r""".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*""", re.IGNORECASE)
+        # Rank Joke Data
         ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
                 "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
         self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
-        self.dad_variants = ["dad", "father", "daddy", "papa"]
+        # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
@@ -179,6 +198,15 @@ class Dad(commands.Cog):
             return True
 
 
+    async def set_random_dad_presence(self):
+        act, emoji = random.choice(self.dad_presences)
+        # Set up for if Discord eventually allows Custom Activities for bots
+        name = f"{act} {emoji}"
+        cust_act = discord.Game(name)
+        await self.bot.change_presence(activity=cust_act)
+
+
+
     def shut_up(self, ctx: commands.Context, shut_up_time:datetime.timedelta):
         """Tell Dad to shut up in this guild for the specified time.
 
@@ -268,6 +296,10 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
+        # Randomly change the status after a message is received
+        if random.randint(1,100) == 1:
+            await self.set_random_dad_presence()
+
 
         # Is a user requesting quiet time?
         await self.told_to_shut_up(message)
@@ -300,6 +332,11 @@ class Dad(commands.Cog):
                 if await self.make_her_joke(message):
                     # It was made, so end
                     return
+
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.set_random_dad_presence()
 
 
     # Commands
