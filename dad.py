@@ -40,74 +40,40 @@ class Dad(commands.Cog):
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
-    async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
-        """Update the nickname for our son, and return it
-        If it doesn't have the correct permissions it will return nickname
-        with no changes, else it will be the mention string for the Member
-        plus the extra characters that couldn't fit in the nickname.
-
-        Parameters
-        ----------
-        son: discord.Member
-            Person to update the nickname of
-        nickname: str
-            Nickname to update our son to.
-
-        Returns
-        -------
-        str
-            Either the unchanged nickname, or the mention string of the author.
-        """
-        try:
-            # Change their nickname
-            await son.edit(nick=nickname[:min(32,len(nickname))], reason="I'm Dad")
-            new_name = son.mention
-            # Check if the name was longer than the character limit
-            if len(nickname) > 32:
-                # Append the extra characters to the mention string
-                nickname = new_name + nickname[32:]
-            else:
-                # No problem
-                nickname = new_name
-            # Return the result
-            return nickname
-        except discord.Forbidden:
-            # We lacked the permissions to do this, simply return the unaltered nickname
-            return nickname
-
-
-    async def make_i_am_dad_joke(self, message: discord.Message) -> bool:
-        """Return True or False on success of joke.
+    # Helper commands
+    async def acknowledge_reference(self, message: discord.Message):
+        """Acknowledge if a user mentioned this bot or a word meaning/containing dad
 
         Parameters
         ----------
         message: discord.Message
-            Message to attempt a joke upon
+            Message to possibly acknowledge
 
-        Returns
-        -------
-        bool
-            Success of joke.
         """
-        match = self.iam_re.search(message.content)
-        if match is None:
-            # No joke was possible, stop
-            return False
-        else:
-            their_name = match.group("name")
-            # Check if we can attempt to rename the author
-            if await self._conf.guild(message.channel.guild).change_nickname():
-                their_name = await self.update_sons_nickname(message.author, their_name)
+        async def _ack():
+            await message.add_reaction("😉")
 
-            # Check if their_name will make our message too long (> 2000 characters)
-            if len(their_name) > 1975:
-                their_name = f"{their_name[:1975]}..."
-            # Construct our response
-            response = f"Hello \"{their_name}\", {match.group('iam')} Dad!"
-            # Send message
-            await message.channel.send(response)
-            # Return success
-            return True
+        if self.bot.user.mentioned_in(message):
+            return await _ack()
+
+        for dad_variant in self.dad_variants:
+            if dad_variant in message.content.lower():
+                return await _ack()
+
+
+    def if_shut_up(self, ctx: commands.Context):
+        # Get shut up time
+        shut_up_time = self.shut_up_until[ctx.guild.id]
+        # If shut up time is not None
+        if shut_up_time is not None:
+            # Dad was told to shut up, but can he talk now?
+            if datetime.datetime.now() > shut_up_time:
+                # He can talk now, so erase the shut up until time
+                self.shut_up_until[ctx.guild.id] = None
+                return False
+            else:
+                # Dad is still in time out
+                return True
 
 
     async def make_her_joke(self, message: discord.Message) -> bool:
@@ -139,6 +105,40 @@ class Dad(commands.Cog):
                 _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
             # Construct our response
             response = f"{_her.title()}*her*, I barely know her!"
+            # Send message
+            await message.channel.send(response)
+            # Return success
+            return True
+
+
+    async def make_i_am_dad_joke(self, message: discord.Message) -> bool:
+        """Return True or False on success of joke.
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to attempt a joke upon
+
+        Returns
+        -------
+        bool
+            Success of joke.
+        """
+        match = self.iam_re.search(message.content)
+        if match is None:
+            # No joke was possible, stop
+            return False
+        else:
+            their_name = match.group("name")
+            # Check if we can attempt to rename the author
+            if await self._conf.guild(message.channel.guild).change_nickname():
+                their_name = await self.update_sons_nickname(message.author, their_name)
+
+            # Check if their_name will make our message too long (> 2000 characters)
+            if len(their_name) > 1975:
+                their_name = f"{their_name[:1975]}..."
+            # Construct our response
+            response = f"Hello \"{their_name}\", {match.group('iam')} Dad!"
             # Send message
             await message.channel.send(response)
             # Return success
@@ -179,27 +179,6 @@ class Dad(commands.Cog):
             return True
 
 
-    async def acknowledge_reference(self, message: discord.Message):
-        """Acknowledge if a user mentioned this bot or a word meaning/containing dad
-
-        Parameters
-        ----------
-        message: discord.Message
-            Message to possibly acknowledge
-
-        """
-        async def _ack():
-            await message.add_reaction("😉")
-
-        if self.bot.user.mentioned_in(message):
-            return await _ack()
-
-        for dad_variant in self.dad_variants:
-            if dad_variant in message.content.lower():
-                return await _ack()
-
-
-    # Commands for telling Dad Bot to shut up
     def shut_up(self, ctx: commands.Context, shut_up_time:datetime.timedelta):
         """Tell Dad to shut up in this guild for the specified time.
 
@@ -209,41 +188,6 @@ class Dad(commands.Cog):
             The amount of time to be quiet.
         """
         self.shut_up_until[ctx.guild.id] = datetime.datetime.now() + shut_up_time
-
-    def if_shut_up(self, ctx: commands.Context):
-        # Get shut up time
-        shut_up_time = self.shut_up_until[ctx.guild.id]
-        # If shut up time is not None
-        if shut_up_time is not None:
-            # Dad was told to shut up, but can he talk now?
-            if datetime.datetime.now() > shut_up_time:
-                # He can talk now, so erase the shut up until time
-                self.shut_up_until[ctx.guild.id] = None
-                return False
-            else:
-                # Dad is still in time out
-                return True
-
-
-    @commands.guild_only()
-    @commands.admin()
-    @commands.command(name="shut_up_dad")
-    async def shut_up_dad(self, ctx: commands.Context, minutes:int):
-        """Admin command for shutting Dad up
-
-        Parameters
-        ----------
-        minutes: int
-            Number of minutes to tell Dad to shut up.
-        """
-        self.shut_up(ctx, datetime.timedelta(seconds=60*minutes))
-
-        contents = dict(
-                title="Okay Boomer",
-                description=f"Dad will be quit for {minutes} minutes"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
 
 
     async def told_to_shut_up(self, message: discord.Message):
@@ -276,7 +220,43 @@ class Dad(commands.Cog):
                         await message.channel.send("No son, I am the boss")
 
 
+    async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
+        """Update the nickname for our son, and return it
+        If it doesn't have the correct permissions it will return nickname
+        with no changes, else it will be the mention string for the Member
+        plus the extra characters that couldn't fit in the nickname.
 
+        Parameters
+        ----------
+        son: discord.Member
+            Person to update the nickname of
+        nickname: str
+            Nickname to update our son to.
+
+        Returns
+        -------
+        str
+            Either the unchanged nickname, or the mention string of the author.
+        """
+        try:
+            # Change their nickname
+            await son.edit(nick=nickname[:min(32,len(nickname))], reason="I'm Dad")
+            new_name = son.mention
+            # Check if the name was longer than the character limit
+            if len(nickname) > 32:
+                # Append the extra characters to the mention string
+                nickname = new_name + nickname[32:]
+            else:
+                # No problem
+                nickname = new_name
+            # Return the result
+            return nickname
+        except discord.Forbidden:
+            # We lacked the permissions to do this, simply return the unaltered nickname
+            return nickname
+
+
+    # Listeners
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
@@ -322,9 +302,37 @@ class Dad(commands.Cog):
                     return
 
 
+    # Commands
     @commands.guild_only()
     @commands.admin()
-    @commands.command(name="set_response_chance")
+    @commands.command(name="shut_up_dad")
+    async def shut_up_dad(self, ctx: commands.Context, minutes:int):
+        """Admin command for shutting Dad up
+
+        Parameters
+        ----------
+        minutes: int
+            Number of minutes to tell Dad to shut up.
+        """
+        self.shut_up(ctx, datetime.timedelta(seconds=60*minutes))
+
+        contents = dict(
+                title="Okay Boomer",
+                description=f"Dad will be quit for {minutes} minutes"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+   
+
+    @commands.guild_only()
+    @commands.admin()
+    @commands.group()
+    async def dad_settings(self, ctx: commands.Context) -> None:
+        """Admin commands"""
+
+
+    # Set commands
+    @dad_settings.command(name="set_response_chance")
     async def set_response_chance(self, ctx: commands.Context, response_chance:int):
         """Response chance for jokes.
 
@@ -348,24 +356,8 @@ class Dad(commands.Cog):
         return await ctx.send(embed=embed)
 
 
-    @commands.guild_only()
-    @commands.admin()
-    @commands.command(name="toggle_nickname_change")
-    async def toggle_nickname_change(self, ctx: commands.Context):
-        """Rather users nicknames should be changed for "I'm" jokes"""
-        await self._conf.guild(ctx.guild).change_nickname.set(
-                not await self._conf.guild(ctx.guild).change_nickname()) 
-        contents = dict(
-                title="Toggled Nickname Change",
-                description=f"Set 'nickname_change' to {await self._conf.guild(ctx.guild).change_nickname()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @commands.guild_only()
-    @commands.admin()
-    @commands.command(name="toggle_barely_know_her")
+    # Toggle commands
+    @dad_settings.command(name="toggle_barely_know_her")
     async def toggle_barely_know_her(self, ctx: commands.Context):
         """Rather "I barely know her" jokes should be made at all"""
         await self._conf.guild(ctx.guild).barely_know_her.set(
@@ -378,9 +370,7 @@ class Dad(commands.Cog):
         return await ctx.send(embed=embed)
 
 
-    @commands.guild_only()
-    @commands.admin()
-    @commands.command(name="toggle_i_am_dad")
+    @dad_settings.command(name="toggle_i_am_dad")
     async def toggle_i_am_dad(self, ctx: commands.Context):
         """Rather 'Hello "hungry", I'm Dad!' jokes should be made at all"""
         await self._conf.guild(ctx.guild).i_am_dad.set(
@@ -393,9 +383,20 @@ class Dad(commands.Cog):
         return await ctx.send(embed=embed)
 
 
-    @commands.guild_only()
-    @commands.admin()
-    @commands.command(name="toggle_rank_joke")
+    @dad_settings.command(name="toggle_nickname_change")
+    async def toggle_nickname_change(self, ctx: commands.Context):
+        """Rather users nicknames should be changed for "I'm" jokes"""
+        await self._conf.guild(ctx.guild).change_nickname.set(
+                not await self._conf.guild(ctx.guild).change_nickname()) 
+        contents = dict(
+                title="Toggled Nickname Change",
+                description=f"Set 'nickname_change' to {await self._conf.guild(ctx.guild).change_nickname()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
+    @dad_settings.command(name="toggle_rank_joke")
     async def toggle_rank(self, ctx: commands.Context):
         """'That's a major inconvenience' -> MAJOR inconvenience **SALUTE**"""
         await self._conf.guild(ctx.guild).rank_joke.set(
