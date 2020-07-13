@@ -42,6 +42,7 @@ class Dad(commands.Cog):
                 ("Spray for weeds", "🌿"),
                 ("Trim hedges", "🪚"),
                 ("Walk dog", "🐕"),
+                ("Washing car", "🚗"),
                 ("Watch History Channel", "📺")
             ]
         # Dad Variants data
