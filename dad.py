@@ -104,7 +104,7 @@ class Dad(commands.Cog):
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
         # Smashing Data
-        self.smashing_re = re.compile(r"smashing", re.IGNORECASE)
+        self.smashing_re = re.compile(r"smash", re.IGNORECASE)
 
 
     # Helper commands
