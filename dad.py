@@ -19,8 +19,35 @@ _DEFAULT_GUILD = {
     "rank_joke": True,
     "response_chance": 60,
     "request_help": False,
-    "request_help_chance": 1
+    "request_help_chance": 1,
+    "smashing": True
 }
+
+# Determine image folder locations
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGES_DIR = os.path.join(FILE_DIR, "images")
+SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
+SMASHING_DIR = os.path.join(IMAGES_DIR, "smashing")
+
+
+def random_image(directory: str) -> discord.File:
+    """Returns a random image from given directory in the form of a discord.File
+
+    Parameters
+    ----------
+    directory: str
+        Directory to get a random image from
+
+    Returns
+    -------
+    discord.File
+        The path to the randomly selected image.
+    """
+    gif_path = os.path.join(directory,
+            random.choice(os.listdir(directory)))
+    return discord.File(gif_path, filename="joke.gif")
+
+
 
 class Dad(commands.Cog):
     """Dad cog"""
@@ -76,6 +103,8 @@ class Dad(commands.Cog):
             ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
+        # Smashing Data
+        self.smashing_re = re.compile(r"smashing", re.IGNORECASE)
 
 
     # Helper commands
@@ -217,6 +246,37 @@ class Dad(commands.Cog):
             return True
 
 
+    async def make_smashing_joke(self, message: discord.Message) -> bool:
+        """Sending "smashing" gif and return success as bool.
+
+        Parameters
+        ----------
+        message: discord.Message
+            Message to attempt a joke upon
+
+        Returns
+        -------
+        bool
+            Success of joke.
+        """
+        match = self.smashing_re.search(message.content)
+        if match is None:
+            # No joke was possible, stop
+            return False
+        else:
+            # Construct our response
+            response = {}
+            # Pick random gif
+            smashing_gif = random_image(SMASHING_DIR)
+            # Construct embed
+            embed = discord.Embed.from_dict(response)
+            embed.set_image(url=f"attachment://{smashing_gif.filename}")
+            # Send embed and smashing gif
+            await message.channel.send(embed=embed, file=smashing_gif)
+            # Return success
+            return True
+
+
     async def request_help(self, user:discord.User, channel:discord.TextChannel):
         """Request help from a user
 
@@ -354,6 +414,12 @@ class Dad(commands.Cog):
             # Attempt a "rank" joke
             if await self._conf.guild(message.channel.guild).rank_joke():
                 if await self.make_rank_joke(message):
+                    # It was made, so end
+                    return
+
+            # Attempt a "smashing" joke
+            if await self._conf.guild(message.channel.guild).smashing():
+                if await self.make_smashing_joke(message):
                     # It was made, so end
                     return
 
@@ -519,6 +585,20 @@ class Dad(commands.Cog):
         contents = dict(
                 title="Toggled Request Help",
                 description=f"Set 'request_help' to {await self._conf.guild(ctx.guild).request_help()}"
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
+    @dad_settings.command(name="toggle_smashing")
+    async def toggle_smashing(self, ctx: commands.Context):
+        """Toggles making "smashing" jokes"""
+        await self._conf.guild(ctx.guild).smashing.set(
+                not await self._conf.guild(ctx.guild).smashing()) 
+        contents = dict(
+                title="Toggled Smashing",
+                description=f"Set 'smashing' to "\
+                        f"{await self._conf.guild(ctx.guild).smashing()}"
                 )
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
