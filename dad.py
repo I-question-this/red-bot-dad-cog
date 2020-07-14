@@ -61,18 +61,18 @@ class Dad(commands.Cog):
         self._conf.register_guild(**_DEFAULT_GUILD)
         # Dad Presence Data
         self.dad_presences = [
-                ("Balance check book", "🏦"),
+                ("Balance the check book", "🏦"),
                 ("Go to work", "🏢"),
-                ("Grill steaks", "🥩"),
-                ("Mow lawn", "🌿"),
-                ("Rake leaves", "🍁"),
+                ("Grill some steaks", "🥩"),
+                ("Mow the lawn", "🌿"),
+                ("Rake the leaves", "🍁"),
                 ("Sleep in chair", "😴"),
-                ("Sort ties", "👔"),
+                ("Sort the ties", "👔"),
                 ("Spray for weeds", "🌿"),
-                ("Trim hedges", "🪚"),
-                ("Walk dog", "🐕"),
-                ("Wash car", "🚗"),
-                ("Watch History Channel", "📺")
+                ("Trim the hedges", "🪚"),
+                ("Walk the dog", "🐕"),
+                ("Wash the car", "🚗"),
+                ("Watch the History Channel", "📺")
             ]
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
