@@ -72,6 +72,7 @@ class Dad(commands.Cog):
                 ("Trim the hedges", "🪚"),
                 ("Walk the dog", "🐕"),
                 ("Wash the car", "🚗"),
+                ("Wear socks with sandals", "🧦"),
                 ("Watch the History Channel", "📺")
             ]
         # Dad Variants data
