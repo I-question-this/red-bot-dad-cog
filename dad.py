@@ -12,9 +12,7 @@ from redbot.core.bot import Red
 
 
 log = logging.getLogger("red.dad")
-_DEFAULT_GUILD = {
-    "change_nickname": False,
-}
+_DEFAULT_GUILD = dict()
 
 
 
@@ -28,7 +26,7 @@ class Dad(commands.Cog):
         self.bot = bot
         # Register jokes
         for jk in jokes.values():
-            _DEFAULT_GUILD[jk.name] = jk.default_chance
+            jk.register_guild_settings(_DEFAULT_GUILD)
 
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)

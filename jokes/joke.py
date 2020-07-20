@@ -89,6 +89,16 @@ class Joke(ABC):
         return NotImplemented
 
 
+    def register_guild_settings(self, guild_settings: dict):
+        """Modifies the given dictionary of guild settings to include our own.
+        Parameters
+        ----------
+        guild_settings: dict
+            The dictionary to modify.
+        """
+        guild_settings[self.name] = self.default_chance
+
+
     async def set_response_chance(self, bot: Red, ctx: commands.Context, 
             new_chance: float):
         """

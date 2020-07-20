@@ -52,6 +52,13 @@ class IAmDadJoke(Joke):
             return True
 
 
+    def register_guild_settings(self, guild_settings: dict):
+        """Modifies the given dictionary of guild settings to include our own.
+        """
+        super().register_guild_settings(guild_settings)
+        guild_settings["change_nickname"] = False
+
+
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
         """Update the nickname for our son, and return it
         If it doesn't have the correct permissions it will return nickname
