@@ -507,10 +507,11 @@ class Dad(commands.Cog):
 
     @dad_settings.command()
     async def list_chances(self, ctx: commands.Context):
+        """List the chances for all jokes"""
         chances = []
         for jk in JOKES.values():
             chances.append(f"{jk.name}: "\
-                    f"{await jk.get_response_chance(ctx)}%")
+                    f"{await jk.get_response_chance(self, ctx)}%")
         contents = dict(
                 title = "Response Chances",
                 description = "\n".join(sorted(chances))
@@ -521,10 +522,28 @@ class Dad(commands.Cog):
     @dad_settings.command()
     async def set_chance(self, ctx: commands.Context, name: str, 
             response_chance: float):
+        """Set the chance for a joke.
+        Parameters
+        ----------
+        name: str
+            The name of the joke to modify the chance of.
+        response_chance: float
+            The new response chance, must be a value [0.0-1.0].
+        """
         try:
-            JOKES[name].set_response_chance(ctx, response_chance)
+            await JOKES[name].set_response_chance(self, ctx,
+                    response_chance)
+            title = "Set Response Chance: Success"
+            description = f"Set {name} to {response_chance}%"
         except KeyError:
-            pass
+            title = "Set Response Chance: Failure"
+            description = f"No such value as {name}"
         except ValueError:
-            pass
+            title = "Set Response Chance: Failure"
+            description = f"Incorrect response chance value"
+        contents = dict(
+                title = title,
+                description = description
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
 
