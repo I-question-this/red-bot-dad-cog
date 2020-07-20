@@ -14,12 +14,7 @@ from redbot.core.bot import Red
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {
-    "barely_know_her": 0.25,
     "change_nickname": False,
-    "i_am_dad": 0.25,
-    "rank_joke": 1.0,
-    "request_help": 0.005,
-    "smashing": 1.0
 }
 
 # Determine image folder locations
