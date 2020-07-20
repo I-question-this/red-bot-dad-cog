@@ -50,28 +50,10 @@ class Dad(commands.Cog):
             ]
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
-        # Rank Joke Data
-        # Request Help Data
-        self.request_help_method = [
-                "before dinner, please",
-                "go",
-                "help me",
-                "if you want your allowance, "
-            ]
-        self.request_help_tasks = [
-                "clean up the yard",
-                "clean your room",
-                "fold the laundry",
-                "mow the lawn",
-                "rake the leaves",
-                "walk the dog",
-                "wash the car"
-            ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
         # Smashing Data
         self.smashing_re = re.compile(r"smash", re.IGNORECASE)
-
 
 
     # Helper commands
