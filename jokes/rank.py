@@ -11,7 +11,7 @@ from .util import random_image, SALUTES_DIR
 class RankJoke(Joke):
     def __init__(self):
         # Set up super class
-        super().__init__("rank", 0.25)
+        super().__init__("rank", 25.0)
         # Set up this class
         ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
                 "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]

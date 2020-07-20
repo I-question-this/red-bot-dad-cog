@@ -252,7 +252,7 @@ class Dad(commands.Cog):
         name: str
             The name of the joke to modify the chance of.
         response_chance: float
-            The new response chance, must be a value [0.0-1.0].
+            The new response chance, must be a value [0.0-100.0].
         """
         try:
             await self.jokes[name].set_response_chance(self, ctx,

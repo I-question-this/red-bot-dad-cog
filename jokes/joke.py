@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import discord
+import random
 from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
@@ -18,14 +19,14 @@ class Joke(ABC):
         Raises
         ------
         ValueError
-            Occurs if default_chance is not within the range [0.0-1.0]
+            Occurs if default_chance is not within the range [0.0,100.0]
         """
         # Set up saved values
         self.name = name
-        if 0.0 <= default_chance <= 1.0:
+        if 0.0 <= default_chance <= 100.0:
             self.default_chance = default_chance
         else:
-            raise ValueError(f"default_chance must be in the range [0.0-1.0]")
+            raise ValueError(f"default_chance must be in the range [0.0,100.0]")
         self.JOKES[self.name] = self
 
 
@@ -66,7 +67,7 @@ class Joke(ABC):
             default values for guilds.
         """
         chance = await self.get_response_chance(bot, msg)
-        if chance <= random.uniform(0.0, 1.0):
+        if  random.uniform(0.0, 100.0) <= chance:
             return await self._make_joke(bot, msg)
         else:
             return False
@@ -109,14 +110,14 @@ class Joke(ABC):
         ctx: commands.Context
             The context in which the joke is being made.
         new_chance: float
-            The default chance [0.0-1.0] of the joke occuring
+            The default chance [0.0,100.0] of the joke occuring
         Raises
         ------
         ValueError
-            Occurs if default_chance is not within the range [0.0-1.0]
+            Occurs if default_chance is not within the range [0.0,100.0]
         """
-        if not (0.0 <= new_chance <= 1.0):
-            raise ValueError(f"new_chance must be in the range [0.0-1.0]")
+        if not (0.0 <= new_chance <= 100.0):
+            raise ValueError(f"new_chance must be in the range [0.0,100.0]")
 
         await getattr(bot._conf.guild(ctx.guild), self.name)\
             .set(new_chance)
