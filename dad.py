@@ -235,9 +235,8 @@ class Dad(commands.Cog):
             response = {}
             response["title"] = f"{match.group('rank').capitalize()} {match.group('title').capitalize()}"
             # Pick random salute gif
-            salute_dir = os.path.join(cog_data_path(), "Dad/salute")
-            gif_path = os.path.join(salute_dir, random.choice(os.listdir(salute_dir)))
-            salute_gif = discord.File(gif_path, filename="salute.gif")
+            # Pick random gif
+            salute_gif = random_image(SALUTES_DIR)
             # Construct embed
             embed = discord.Embed.from_dict(response)
             embed.set_image(url=f"attachment://{salute_gif.filename}")
