@@ -10,7 +10,7 @@ from .joke import Joke
 class HerJoke(Joke):
     def __init__(self):
         # Set up super class
-        super().__init__("her", 25.0)
+        super().__init__("her", 5.0)
         # Set up this class
         self.her_re = re.compile(r".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*", re.IGNORECASE)
 
