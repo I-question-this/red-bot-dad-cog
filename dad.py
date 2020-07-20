@@ -25,7 +25,8 @@ class Dad(commands.Cog):
         super().__init__()
         self.bot = bot
         # Register jokes
-        for jk in jokes.values():
+        self.jokes = jokes
+        for jk in self.jokes.values():
             jk.register_guild_settings(_DEFAULT_GUILD)
 
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
@@ -190,7 +191,7 @@ class Dad(commands.Cog):
         await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
-        for jk in random.sample(list(JOKES.values()), len(JOKES)):
+        for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
             if await jk.make_joke(self, message):
                 # Joke was successful, end
                 break
@@ -232,7 +233,7 @@ class Dad(commands.Cog):
     async def list_chances(self, ctx: commands.Context):
         """List the chances for all jokes"""
         chances = []
-        for jk in JOKES.values():
+        for jk in self.jokes.values():
             chances.append(f"{jk.name}: "\
                     f"{await jk.get_response_chance(self, ctx)}%")
         contents = dict(
@@ -254,7 +255,7 @@ class Dad(commands.Cog):
             The new response chance, must be a value [0.0-1.0].
         """
         try:
-            await JOKES[name].set_response_chance(self, ctx,
+            await self.jokes[name].set_response_chance(self, ctx,
                     response_chance)
             title = "Set Response Chance: Success"
             description = f"Set {name} to {response_chance}%"
