@@ -1,5 +1,6 @@
 import discord
 import os
+import random
 
 
 # Determine image folder locations

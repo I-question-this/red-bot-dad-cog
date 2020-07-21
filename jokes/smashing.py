@@ -44,7 +44,7 @@ class SmashingJoke(Joke):
             embed = discord.Embed.from_dict(response)
             embed.set_image(url=f"attachment://{smashing_gif.filename}")
             # Send embed and smashing gif
-            await message.channel.send(embed=embed, file=smashing_gif)
+            await msg.channel.send(embed=embed, file=smashing_gif)
             # Return success
             return True
 
