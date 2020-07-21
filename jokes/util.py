@@ -1,6 +1,7 @@
 import discord
 import os
 import random
+random.seed()
 
 
 # Determine image folder locations

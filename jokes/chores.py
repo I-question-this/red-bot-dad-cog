@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import discord
 import random
+random.seed()
 import re
 from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
