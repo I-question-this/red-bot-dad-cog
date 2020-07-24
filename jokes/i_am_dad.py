@@ -5,6 +5,7 @@ from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
 from .joke import Joke
+from .util import Option, OptionType
 
 
 class IAmDadJoke(Joke):
@@ -15,6 +16,10 @@ class IAmDadJoke(Joke):
         i_variants = r"ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"
         m_variants = r"ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"
         self.iam_re = re.compile(f"(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)", re.IGNORECASE)
+        # Set up options
+        self.guild_options.append(
+                Option(f"{self.name}_change_nickname", True, OptionType.BOOLEAN),
+                )
 
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -37,8 +42,10 @@ class IAmDadJoke(Joke):
         else:
             their_name = match.group("name")
             # Check if we can attempt to rename the author
-            if await bot._conf.guild(msg.channel.guild).change_nickname():
-                their_name = await self.update_sons_nickname(msg.author, their_name)
+            if await self.get_guild_option(bot, msg.channel, 
+                    f"{self.name}_change_nickname"):
+                their_name = await self.update_sons_nickname(msg.author,
+                        their_name)
 
             # Check if their_name will make our message too long (> 2000 characters)
             if len(their_name) > 1975:
@@ -49,13 +56,6 @@ class IAmDadJoke(Joke):
             await msg.channel.send(response)
             # Return success
             return True
-
-
-    def register_guild_settings(self, guild_settings: dict):
-        """Modifies the given dictionary of guild settings to include our own.
-        """
-        super().register_guild_settings(guild_settings)
-        guild_settings["change_nickname"] = False
 
 
     async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:

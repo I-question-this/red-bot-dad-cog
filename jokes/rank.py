@@ -42,7 +42,6 @@ class RankJoke(Joke):
             response["title"] = f"{match.group('rank').capitalize()} {match.group('title').capitalize()}"
             # Pick random salute gif
             salute_gif = random_image(SALUTES_DIR)
-            salute_gif = discord.File(gif_path, filename="salute.gif")
             # Construct embed
             embed = discord.Embed.from_dict(response)
             embed.set_image(url=f"attachment://{salute_gif.filename}")

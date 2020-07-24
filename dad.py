@@ -10,6 +10,8 @@ from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
 
+from .jokes.joke import Joke, NoSuchOption
+
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = dict()
@@ -26,8 +28,10 @@ class Dad(commands.Cog):
         self.bot = bot
         # Register jokes
         self.jokes = jokes
+        self.guild_options_information = dict()
         for jk in self.jokes.values():
-            jk.register_guild_settings(_DEFAULT_GUILD)
+            jk.register_guild_settings(_DEFAULT_GUILD, 
+                    self.guild_options_information)
 
         self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
         self._conf.register_guild(**_DEFAULT_GUILD)
@@ -210,41 +214,45 @@ class Dad(commands.Cog):
 
 
     @dad_settings.command()
-    async def list_chances(self, ctx: commands.Context):
-        """List the chances for all jokes"""
-        chances = []
-        for jk in self.jokes.values():
-            chances.append(f"{jk.name}: "\
-                    f"{await jk.get_response_chance(self, ctx)}%")
+    async def list_options(self, ctx: commands.Context):
+        """List the values for all the options for jokes"""
+        guild_option_strings = []
+        for opt in self.guild_options_information.values():
+            guild_option_strings.append(
+                    f"{opt.name}: "\
+                    f"{await Joke.get_guild_option(self, ctx, opt.name)}"
+                )
+        guild_option_strings = '\n'.join(sorted(guild_option_strings))
         contents = dict(
                 title = "Response Chances",
-                description = "\n".join(sorted(chances))
+                description = f"**Guild**: \n {guild_option_strings}"
                 )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
 
     @dad_settings.command()
-    async def set_chance(self, ctx: commands.Context, name: str, 
-            response_chance: float):
-        """Set the chance for a joke.
+    async def set_option(self, ctx: commands.Context, name: str, 
+            new_value):
+        """Set the option for a joke.
         Parameters
         ----------
         name: str
-            The name of the joke to modify the chance of.
-        response_chance: float
-            The new response chance, must be a value [0.0-100.0].
+            The name of the option to modify.
+        new_value: any
+            The new value.
         """
         try:
-            await self.jokes[name].set_response_chance(self, ctx,
-                    response_chance)
+            await Joke.set_guild_option_value(self, ctx, name, new_value)
             title = "Set Response Chance: Success"
-            description = f"Set {name} to {response_chance}%"
-        except KeyError:
-            title = "Set Response Chance: Failure"
-            description = f"No such value as {name}"
-        except ValueError:
-            title = "Set Response Chance: Failure"
-            description = f"Incorrect response chance value"
+            description = f"Set {name} to {new_value}"
+            if "chance" in name:
+                description += "%"
+        except NoSuchOption as e:
+            title = "Set Option: Failure"
+            description = str(e)
+        except ValueError as e:
+            title = "Set Option: Failure"
+            description = str(e)
         contents = dict(
                 title = title,
                 description = description

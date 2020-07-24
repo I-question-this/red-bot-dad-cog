@@ -5,10 +5,18 @@ random.seed()
 from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
+from .util import Option, OptionType
+
+class NoSuchOption(Exception):
+    def __init__(self, option_name):
+        self.option_name = option_name
+
+    def __str__(self):
+        return f"No such option: {self.option_name}"
+
+
 
 class Joke(ABC): 
-    JOKES = dict()
-
     def __init__(self, name:str, default_chance:float):
         """
         Parameters
@@ -16,7 +24,7 @@ class Joke(ABC):
         name: str
             The name of the joke
         default_chance: float
-            The default chance [0.0-1.0] of the joke occuring
+            The default chance [0.0,100.0] of the joke occuring
         Raises
         ------
         ValueError
@@ -24,28 +32,11 @@ class Joke(ABC):
         """
         # Set up saved values
         self.name = name
-        if 0.0 <= default_chance <= 100.0:
-            self.default_chance = default_chance
-        else:
-            raise ValueError(f"default_chance must be in the range [0.0,100.0]")
-        self.JOKES[self.name] = self
-
-
-    async def get_response_chance(self, bot: Red, ctx: commands.Context):
-        """
-        Parameters
-        ----------
-        bot: Red
-            The RedBot executing this function.
-        ctx: commands.Context
-            The context in which the joke is being made.
-        Raises
-        ------
-        AttributeError
-            Occurs if this Joke was never properly saved into the default
-            values for the RedBot config file.
-        """
-        return await getattr(bot._conf.guild(ctx.guild), self.name)()
+        # Set up options
+        self.guild_options = [
+                Option(f"{self.name}_chance", default_chance, 
+                    OptionType.PERCENTAGE)
+                ]
 
 
     async def make_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -67,7 +58,8 @@ class Joke(ABC):
             It means that the response chance was never made a part of the 
             default values for guilds.
         """
-        chance = await self.get_response_chance(bot, msg)
+        chance = await self.get_guild_option(bot, msg.channel, 
+                f"{self.name}_chance")
         if  random.uniform(0.0, 100.0) <= chance:
             return await self._make_joke(bot, msg)
         else:
@@ -91,18 +83,24 @@ class Joke(ABC):
         return NotImplemented
 
 
-    def register_guild_settings(self, guild_settings: dict):
-        """Modifies the given dictionary of guild settings to include our own.
+    def register_guild_settings(self, default_guild_settings: dict, 
+            guild_options_information: dict):
+        """Modifies the given dictionaries of guild settings to include our own.
         Parameters
         ----------
-        guild_settings: dict
-            The dictionary to modify.
+        default_guild_settings: dict
+            The dictionary to modify via inserting default values.
+        guild_options_information: dict
+            The dictionary to modify via inserting the Option objects.
         """
-        guild_settings[self.name] = self.default_chance
+        for opt in self.guild_options:
+            default_guild_settings[opt.name] = opt.default_value
+            guild_options_information[opt.name] = opt
 
 
-    async def set_response_chance(self, bot: Red, ctx: commands.Context, 
-            new_chance: float):
+    @staticmethod
+    async def get_guild_option(bot: Red, ctx: commands.Context, 
+            option_name: str) -> any:
         """
         Parameters
         ----------
@@ -110,16 +108,51 @@ class Joke(ABC):
             The RedBot executing this function.
         ctx: commands.Context
             The context in which the joke is being made.
-        new_chance: float
-            The default chance [0.0,100.0] of the joke occuring
+        option_name: str
+            The option to get.
+        Returns
+        -------
+        any
+            The requested value.
         Raises
         ------
-        ValueError
-            Occurs if default_chance is not within the range [0.0,100.0]
+        NoSuchOption
+            Raised if the given option_name does not exist
         """
-        if not (0.0 <= new_chance <= 100.0):
-            raise ValueError(f"new_chance must be in the range [0.0,100.0]")
+        try:
+            return await getattr(bot._conf.guild(ctx.guild), option_name)()
+        except AttributeError:
+            raise NoSuchOption(option_name)
 
-        await getattr(bot._conf.guild(ctx.guild), self.name)\
-            .set(new_chance)
+
+    @staticmethod
+    async def set_guild_option_value(bot: Red, ctx: commands.Context, 
+            option_name: str, new_value: any):
+        """
+        Parameters
+        ----------
+        bot: Red
+            The RedBot executing this function.
+        ctx: commands.Context
+            The context in which the joke is being made.
+        option_name: str
+            The option to set the value of.
+        new_value: any
+            The new value for the option.
+        Raises
+        ------
+        NoSuchOption
+            Raised if the given option_name does not exist
+        """
+        try:
+            # Get the type converter
+            converter = bot.guild_options_information[option_name]
+            # Convert the new value
+            new_value = converter.type_convertor(new_value)
+            # Set the value
+            await getattr(bot._conf.guild(ctx.guild), option_name)\
+                .set(new_value)
+        except (AttributeError, KeyError):
+            raise NoSuchOption(option_name)
+
 
