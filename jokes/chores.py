@@ -19,60 +19,61 @@ class ChoreJoke(Joke):
         super().__init__("chore", 0.1)
         # Set up this class
         self.request_help_method = [
-                ("before dinner, please", None),
-                ("go", None),
-                ("help me", None),
-                ("if you want your allowance, ", ":moneybag:")
+                ("before dinner, please", "👍"),
+                ("go", "👍"),
+                ("help me", "👍"),
+                ("if you want your allowance, ", "💵")
             ]
         self.request_help_tasks = [
                 ("clean up the yard", [
-                        "\N{BROOM}",
-                        "\N{FALLEN LEAF}",
-                        "\N{LEAF FLUTTERING IN WIND}",
-                        "\N{MAPLE LEAF}"
+                        "🧹",
+                        "🍂",
+                        "🍃",
+                        "🍁"
                     ]),
                 ("clean your room", [
-                        "\N{BROOM}",
-                        "\N{BAR OF SOAP}",
-                        "\N{SPONGE}",
-                        "\N{LOTION BOTTLE}"
+                        "🧹",
+                        "🧼",
+                        "🧽",
+                        "🧴"
                     ]),
                 ("fold the laundry", [
-                        "\N{T-SHIRT}",
-                        "\N{RUNNING SHIRT WITH SASH}",
-                        "\N{WOMANS CLOTHES}"
+                        "👕",
+                        "🎽",
+                        "👚"
                     ]),
                 ("mow the lawn",  [
-                        "\N{AXE}",
-                        "\N{CROSSED SWORDS}",
-                        "\N{DAGGER}",
-                        "\N{HERB}", 
-                        "\N{HOCHO}", 
-                        "\N{RAZOR}", 
+                        "🪓",
+                        "🗡️",
+                        "⚔️",
+                        "🌿", 
+                        "🔪", 
+                        "🪒", 
                     ]),
                 ("rake the leaves", [
-                        "\N{BROOM}",
-                        "\N{FALLEN LEAF}",
-                        "\N{LEAF FLUTTERING IN WIND}",
-                        "\N{MAPLE LEAF}"
+                        "🧹",
+                        "🍂",
+                        "🍃",
+                        "🍁"
                     ]),
                 ("walk the dog", [
-                        "\N{DOG}",
-                        "\N{GUIDE DOG}",
-                        # "\N{SERVICE DOG}" This some weird meta emoji
+                        "🐶",
+                        "🐕",
+                        "🦮",
+                        "🐕‍🦺"
                     ]),
                 ("wash the car", [
-                        "\N{AUTOMOBILE}",
-                        # "\N{RED CAR}", There is not separate car color emoji
-                        "\N{BAR OF SOAP}",
-                        "\N{SPONGE}",
-                        "\N{LOTION BOTTLE}"
+                        "🚗",
+                        "🚙",
+                        "🧼",
+                        "🧽",
+                        "🧴"
                     ])
             ]
 
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """Make a rank joke, returning bool as to success.
+        """Make a request for a chore, returning bool as to success.
 
         Parameters
         ----------
@@ -96,19 +97,12 @@ class ChoreJoke(Joke):
         # TEMPORARY: ADD EXPECTED EMOJIS
         start_adding_reactions(chore_msg, solutions)
         # Construct predicate to await user response
+        print(solutions)
         pred = ReactionPredicate.with_emojis(solutions, chore_msg, msg.author)
         # Await response
         await bot.bot.wait_for("reaction_add", check=pred)
         # If user responded correctly
         if not pred.result:
-            # Construct thank you
-            msg_text = f"Thank you {msg.author.mention}"
-            if reward:
-                # Give them their reward
-                msg_text += f", here is your reward: {reward}"
-            else:
-                # Else just put a period.
-                msg_text += "."
-            # Send thank you
-            await msg.channel.send(msg_text)
-
+            await chore_msg.add_reaction(reward)
+        else:
+            await chore_msg.add_reaction("👎")
