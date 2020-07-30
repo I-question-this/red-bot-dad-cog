@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import asyncio
 import discord
 import random
 random.seed()
@@ -90,19 +91,27 @@ class ChoreJoke(Joke):
         # Get the chore information
         method, reward = random.choice(self.request_help_method)
         task, solutions = random.choice(self.request_help_tasks)
+
         # Construct the message text
         msg_text = f"{msg.author.mention} {method} {task}."
+
         # Send the chore request
         chore_msg = await msg.channel.send(msg_text)
-        # TEMPORARY: ADD EXPECTED EMOJIS
-        start_adding_reactions(chore_msg, solutions)
+
         # Construct predicate to await user response
-        print(solutions)
-        pred = ReactionPredicate.with_emojis(solutions, chore_msg, msg.author)
+        def check(reaction, user):
+            return user == msg.author and\
+                    str(reaction.emoji) in solutions
+
         # Await response
-        await bot.bot.wait_for("reaction_add", check=pred)
-        # If user responded correctly
-        if not pred.result:
-            await chore_msg.add_reaction(reward)
-        else:
+        try:
+            # User gets 60s to guess, any non-matching emojis
+            # Result in nothing occurring.
+            reaction, user = await bot.bot.wait_for(
+                    "reaction_add", timeout=60.0,
+                    check=check)
+        except asyncio.TimeoutError:
             await chore_msg.add_reaction("👎")
+        else:
+            await chore_msg.add_reaction(reward)
+
