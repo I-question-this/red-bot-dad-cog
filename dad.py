@@ -63,7 +63,8 @@ class Dad(commands.Cog):
                 "☠️",
                 "🖕",
                 "🚫",
-                "⛔"
+                "⛔",
+                "💩"
             ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
