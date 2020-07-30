@@ -54,6 +54,17 @@ class Dad(commands.Cog):
             ]
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
+        # Recognized rude responses
+        self.rude_responses = [
+                "😡",
+                "🤬",
+                "💀",
+                "😴",
+                "☠️",
+                "🖕",
+                "🚫",
+                "⛔"
+            ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
@@ -161,7 +172,6 @@ class Dad(commands.Cog):
         if random.randint(1,100) == 1:
             await self.set_random_dad_presence()
 
-
         # Is a user requesting quiet time?
         await self.told_to_shut_up(message)
 
@@ -179,6 +189,34 @@ class Dad(commands.Cog):
             if await jk.make_joke(self, message):
                 # Joke was successful, end
                 break
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, 
+            payload:discord.RawReactionActionEvent) -> None:
+        """When a reaction is added to any message
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        """
+        # Check if the emoji is "offensive" to Dad
+        if not str(payload.emoji.name) in self.rude_responses:
+            # It's not, so quit
+            return
+
+        # Get the channel
+        channel = self.bot.get_channel(payload.channel_id)
+
+        # Get Message
+        msg = await channel.fetch_message(payload.message_id)
+
+        # Is Dad the author?
+        if not msg.author.id == self.bot.user.id:
+            # It's not, so quit
+            return
+
+        # They were rude, ground them
+        await channel.send(f"{payload.member.mention} you're grounded")
 
 
     @commands.Cog.listener()
