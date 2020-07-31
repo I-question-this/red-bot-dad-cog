@@ -36,10 +36,10 @@ class RankJoke(Joke):
             "private",
             "sergeant"
         ]
+        ranks_re = "|".join(ranks)
         self.rank_re = re.compile(
-                r".*(?P<rank>\b(" +\
-                        "|".join(ranks) +\
-                        r"\b))\s+(?P<title>\b\w+\b)", 
+                r".*(?P<rank>\b(" + ranks_re + r"\b))(ly)?" +\
+                        r"\s+(?P<title>\b\w+\b)", 
                 re.IGNORECASE)
 
 
