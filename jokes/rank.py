@@ -10,12 +10,38 @@ from .util import random_image, SALUTES_DIR
 
 class RankJoke(Joke):
     def __init__(self):
+        """Init for the Rank joke.
+
+        The Rank joke is where a person says "X Y" where X is a rank in the
+        armed forces, and Y is any word. Example: "Major Explanation".
+        The joke is to send a gif of a person saluting with the title 
+        "Major Explanation" or whatever was actually said. This stems from a
+        bit in "How I Met Your Mother".
+        """
         # Set up super class
         super().__init__("rank", 100.0)
         # Set up this class
-        ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
-                "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
-        self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
+        ranks = [
+            "admiral",
+            "brigadier",
+            "cadet", 
+            "captain",
+            "colonel",
+            "commander",
+            "general",
+            "marshal",
+            "major",
+            "officer",
+            "lieutenant",
+            "private",
+            "sergeant"
+        ]
+        self.rank_re = re.compile(
+                r".*(?P<rank>\b(" +\
+                        "|".join(ranks) +\
+                        r"\b))\s+(?P<title>\b\w+\b)", 
+                re.IGNORECASE)
+
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Make a rank joke, returning bool as to success.
@@ -49,3 +75,4 @@ class RankJoke(Joke):
             await msg.channel.send(embed=embed, file=salute_gif)
             # Return success
             return True
+

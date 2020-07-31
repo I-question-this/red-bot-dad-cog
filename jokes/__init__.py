@@ -24,3 +24,4 @@ for module in __all__:
             obj = cls()
             # Register the joke
             JOKES[obj.name] = obj
+

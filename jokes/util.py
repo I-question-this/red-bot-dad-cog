@@ -22,10 +22,7 @@ def convert_to_boolean(boolean: str) -> bool:
     Returns
     -------
     bool
-        The converted and verified input.
-
-    Raises
-    ------
+        The converted and verified input.  Raises ------
     ValueError
         Describes problem in conversion and/or verification.
     """
@@ -67,7 +64,7 @@ def convert_to_percentage(percentage: float) -> float:
 
 
 def random_image(directory: str) -> discord.File:
-    """Returns a random image from given directory in the form of a discord.File
+    """Returns a random image from directory in the form of a discord.File
 
     Parameters
     ----------
@@ -85,13 +82,33 @@ def random_image(directory: str) -> discord.File:
 
 
 class OptionType(Enum):
+    """The recognized types to convert strings into types
+    Note that the value of the enums is a method that turns
+    a string into the specified type, even doing sanity
+    checks on the converted value.
+    """
     PERCENTAGE = convert_to_percentage
     BOOLEAN = convert_to_boolean
 
 
 class Option:
-    def __init__(self, name:str, default_value:any, 
+    def __init__(self, name:str, default_value, 
             option_type:OptionType):
+        """The init for the Option object.
+        The use of this object is to define an option denoted by the name
+        with a default value and a method to convert user input 
+        (strings) into the proper type for saving.
+
+        Parameters
+        ----------
+        name: str
+            The name of the option.
+        default_value: any
+            The default value for this option.
+        option_type: OptionType
+            The Enum containing the method to convert
+            strings into the required type.
+        """
         self.name = name
         self.default_value = default_value
         # I don't know why this object becomes a function,

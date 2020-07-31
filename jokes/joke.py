@@ -2,13 +2,17 @@ from abc import ABC, abstractmethod
 import discord
 import random
 random.seed()
-from redbot.core import checks, commands, Config
+from redbot.core import commands
 from redbot.core.bot import Red
 
 from .util import Option, OptionType
 
+
 class NoSuchOption(Exception):
-    def __init__(self, option_name):
+    def __init__(self, option_name:str):
+        """Init for NoSuchOption exception
+        This will be thrown when a user requests an option that doesn't exist
+        """
         self.option_name = option_name
 
     def __str__(self):
@@ -18,7 +22,21 @@ class NoSuchOption(Exception):
 
 class Joke(ABC): 
     def __init__(self, name:str, default_chance:float):
-        """
+        """Init for the abstract Joke object.
+        The purpose of this object is to generalize the flow of the typical 
+        joke. These jokes are structured in that they will:
+            1: Attempt to make the joke with some specified percent chance.
+            2: If randomness allows they will then scan the message to see if 
+               the joke applies.
+            3: If it applies it will respond with the joke, and return True.
+               If it does not, or if randomness did not allow an attempt it
+               will return False.
+        The idea is that Dad will attempt all possible jokes in a random order
+        upon receiving a message until either a joke succeeds or he runs out of
+        jokes. Since each joke is only supposed to happen a specified amount of
+        time this class also uses the Option class to generalize creating that 
+        setting for each guild. It has been setup so that Jokes can create 
+        other options if needed.
         Parameters
         ----------
         name: str

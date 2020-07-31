@@ -5,10 +5,10 @@ import logging
 import random
 random.seed()
 import re
-
 from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
+from typing import List
 
 from .jokes.joke import Joke, NoSuchOption
 
@@ -19,10 +19,16 @@ _DEFAULT_GUILD = dict()
 
 
 class Dad(commands.Cog):
-    """Dad cog"""
+    def __init__(self, bot:Red, jokes:List[Joke]):
+        """Init for the Dad cog
 
-
-    def __init__(self, bot: Red, jokes: list):
+        Parameters
+        ----------
+        bot: Red
+            The Redbot instance instantiating this cog.
+        jokes: List[Joke]
+            The list of Joke objects to be loaded.
+        """
         # Setup
         super().__init__()
         self.bot = bot
@@ -33,46 +39,50 @@ class Dad(commands.Cog):
             jk.register_guild_settings(_DEFAULT_GUILD, 
                     self.guild_options_information)
 
-        self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
+        self._conf = Config.get_conf(
+                None, 91919191, 
+                cog_name=f"{self.__class__.__name__}", force_registration=True
+                )
         self._conf.register_guild(**_DEFAULT_GUILD)
         self.shut_up_until = defaultdict(lambda: None)
         # Dad Presence Data
         self.dad_presences = [
-                ("Balance the check book", "🏦"),
-                ("Go to work", "🏢"),
-                ("Grill some steaks", "🥩"),
-                ("Mow the lawn", "🌿"),
-                ("Rake the leaves", "🍁"),
-                ("Sleep in chair", "😴"),
-                ("Sort the ties", "👔"),
-                ("Spray for weeds", "🌿"),
-                ("Trim the hedges", "🪚"),
-                ("Walk the dog", "🐕"),
-                ("Wash the car", "🚗"),
-                ("Wear socks with sandals", "🧦"),
-                ("Watch the History Channel", "📺")
-            ]
+            ("Balance the check book", "🏦"),
+            ("Go to work", "🏢"),
+            ("Grill some steaks", "🥩"),
+            ("Mow the lawn", "🌿"),
+            ("Rake the leaves", "🍁"),
+            ("Sleep in chair", "😴"),
+            ("Sort the ties", "👔"),
+            ("Spray for weeds", "🌿"),
+            ("Trim the hedges", "🪚"),
+            ("Walk the dog", "🐕"),
+            ("Wash the car", "🚗"),
+            ("Wear socks with sandals", "🧦"),
+            ("Watch the History Channel", "📺")
+        ]
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
         # Recognized rude responses
         self.rude_responses = [
-                "😡",
-                "🤬",
-                "💀",
-                "😴",
-                "☠️",
-                "🖕",
-                "🚫",
-                "⛔",
-                "💩"
-            ]
+            "😡",
+            "🤬",
+            "💀",
+            "😴",
+            "☠️",
+            "🖕",
+            "🚫",
+            "⛔",
+            "💩"
+        ]
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
     # Helper commands
-    async def acknowledge_reference(self, message: discord.Message):
-        """Acknowledge if a user mentioned this bot or a word meaning/containing dad
+    async def acknowledge_reference(self, message:discord.Message):
+        """Acknowledge if this bot is mentioned or "dad"
+        "dad" means synonyms, possibly in other languages.
 
         Parameters
         ----------
@@ -91,7 +101,48 @@ class Dad(commands.Cog):
                 return await _ack()
 
 
-    def if_shut_up(self, ctx: commands.Context):
+    async def ground_rude_person(self, payload:discord.RawReactionActionEvent)\
+            -> None:
+        """Ground users who reacted to Dad's messages "rudely"
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        """
+        # Check if the emoji is "offensive" to Dad
+        if not str(payload.emoji.name) in self.rude_responses:
+            # It's not, so quit
+            return
+
+        # Get the channel
+        channel = self.bot.get_channel(payload.channel_id)
+
+        # Get Message
+        msg = await channel.fetch_message(payload.message_id)
+
+        # Is Dad the author?
+        if not msg.author.id == self.bot.user.id:
+            # It's not, so quit
+            return
+
+        # They were rude, ground them
+        await channel.send(f"{payload.member.mention} you're grounded")
+
+
+    def if_shut_up(self, ctx:commands.Context) -> bool:
+        """Is Dad supposed to shut up?
+
+        Parameters
+        ----------
+        ctx: commands.Context
+            The context in which we determine if Dad is
+            supposed to shut up.
+
+        Returns
+        -------
+        bool
+            Boolean as to rather Dad is supposed to shut up.
+        """
         # Get shut up time
         shut_up_time = self.shut_up_until[ctx.guild.id]
         # If shut up time is not None
@@ -106,7 +157,7 @@ class Dad(commands.Cog):
                 return True
 
 
-    async def set_random_dad_presence(self):
+    async def set_random_dad_presence(self) -> None:
         """Set a random dad-like presence"""
         act, emoji = random.choice(self.dad_presences)
         # Set up for if Discord eventually allows Custom Activities for bots
@@ -116,25 +167,29 @@ class Dad(commands.Cog):
 
 
 
-    def shut_up(self, ctx: commands.Context, shut_up_time:datetime.timedelta):
+    def shut_up(self, ctx:commands.Context, shut_up_time:datetime.timedelta)\
+            -> None:
         """Tell Dad to shut up in this guild for the specified time.
 
         Parameters
         ----------
+        ctx: commands.Context
+            The context in which we tell Dad to shut up. 
         shut_up_time: datetime.timedelta
             The amount of time to be quiet.
         """
-        self.shut_up_until[ctx.guild.id] = datetime.datetime.now() + shut_up_time
+        self.shut_up_until[ctx.guild.id] = datetime.datetime.now() +\
+                                           shut_up_time
 
 
-    async def told_to_shut_up(self, message: discord.Message):
-        """Did a user mention Dad, and tell him to shut up?
+    async def told_to_shut_up(self, message:discord.Message) -> None:
+        """Shut dad up if a user told him to shut up in their message.
+        Note that the user has to be an admin.
 
         Parameters
         ----------
         message: discord.Message
             Message to possibly be told to shut up in.
-
         """
         if self.bot.user.mentioned_in(message):
             for shut_up_variant in self.shut_up_variants:
@@ -150,16 +205,27 @@ class Dad(commands.Cog):
                     # Respond
                     if admin:
                         minutes = 5
-                        self.shut_up(message, datetime.timedelta(seconds=minutes*60))
+                        self.shut_up(message, 
+                                     datetime.timedelta(seconds=minutes*60)
+                                    )
                         await message.channel.send(
-                                f"Okay son, I'll leave you alone for {minutes} minutes")
+                                f"Okay son, I'll leave you alone for "\
+                                    f"{minutes} minutes"
+                                )
                     else:
                         await message.channel.send("No son, I am the boss")
 
 
     # Listeners
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message:discord.Message):
+        """Perform actions when a message is received
+
+        Parameters
+        ---------
+        message: discord.Message
+            The message to perform actions upon.
+        """
         if isinstance(message.channel, discord.abc.PrivateChannel):
             return
         author = message.author
@@ -191,33 +257,17 @@ class Dad(commands.Cog):
                 # Joke was successful, end
                 break
 
+
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, 
-            payload:discord.RawReactionActionEvent) -> None:
-        """When a reaction is added to any message
+    async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent)\
+            -> None:
+        """Perform actions when a reaction is added to a message.
         Parameters
         ----------
         payload: discord.RawReactionActionEvent
             An object detailing the message and the reaction.
         """
-        # Check if the emoji is "offensive" to Dad
-        if not str(payload.emoji.name) in self.rude_responses:
-            # It's not, so quit
-            return
-
-        # Get the channel
-        channel = self.bot.get_channel(payload.channel_id)
-
-        # Get Message
-        msg = await channel.fetch_message(payload.message_id)
-
-        # Is Dad the author?
-        if not msg.author.id == self.bot.user.id:
-            # It's not, so quit
-            return
-
-        # They were rude, ground them
-        await channel.send(f"{payload.member.mention} you're grounded")
+        await self.ground_rude_person(payload)
 
 
     @commands.Cog.listener()
@@ -229,12 +279,12 @@ class Dad(commands.Cog):
     @commands.guild_only()
     @commands.admin()
     @commands.group()
-    async def dad_settings(self, ctx: commands.Context) -> None:
+    async def dad_settings(self, ctx:commands.Context) -> None:
         """Admin commands"""
 
 
     @dad_settings.command()
-    async def shut_up_dad(self, ctx: commands.Context, minutes:int):
+    async def shut_up_dad(self, ctx:commands.Context, minutes:int):
         """Admin command for shutting Dad up
 
         Parameters
@@ -253,7 +303,7 @@ class Dad(commands.Cog):
 
 
     @dad_settings.command()
-    async def list_options(self, ctx: commands.Context):
+    async def list_options(self, ctx:commands.Context):
         """List the values for all the options for jokes"""
         guild_option_strings = []
         for opt in self.guild_options_information.values():
@@ -270,14 +320,14 @@ class Dad(commands.Cog):
 
 
     @dad_settings.command()
-    async def set_option(self, ctx: commands.Context, name: str, 
+    async def set_option(self, ctx:commands.Context, name:str, 
             new_value):
         """Set the option for a joke.
         Parameters
         ----------
         name: str
             The name of the option to modify.
-        new_value: any
+        new_value: "any"
             The new value.
         """
         try:
