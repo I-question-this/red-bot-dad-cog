@@ -1,21 +1,20 @@
-from abc import ABC, abstractmethod
 import asyncio
 import discord
 import random
 random.seed()
 import re
-from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
-from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import (
-    MessagePredicate,
-    ReactionPredicate
-)
 from .joke import Joke
 
 
 class ChoreJoke(Joke):
     def __init__(self):
+        """Init for the Chore joke
+
+        The chore joke will request a user to perform a chore.
+        Users perform a chore via responding with the appropriate
+        emoji within a short time frame.
+        """
         # Set up super class
         super().__init__("chore", 0.1)
         # Set up this class
@@ -26,55 +25,62 @@ class ChoreJoke(Joke):
                 ("if you want your allowance, ", "💵")
             ]
         self.request_help_tasks = [
-                ("clean up the yard", [
-                        "🧹",
-                        "🍂",
-                        "🍃",
-                        "🍁"
-                    ]),
-                ("clean your room", [
-                        "🧹",
-                        "🧼",
-                        "🧽",
-                        "🧴"
-                    ]),
-                ("fold the laundry", [
-                        "👕",
-                        "🎽",
-                        "👚"
-                    ]),
-                ("mow the lawn",  [
-                        "🪓",
-                        "🗡️",
-                        "⚔️",
-                        "🌿", 
-                        "🔪", 
-                        "🪒", 
-                    ]),
-                ("rake the leaves", [
-                        "🧹",
-                        "🍂",
-                        "🍃",
-                        "🍁"
-                    ]),
-                ("walk the dog", [
-                        "🐶",
-                        "🐕",
-                        "🦮",
-                        "🐕‍🦺"
-                    ]),
-                ("wash the car", [
-                        "🚗",
-                        "🚙",
-                        "🧼",
-                        "🧽",
-                        "🧴"
-                    ])
-            ]
+            ("clean up the yard",
+                [
+                    "🧹",
+                    "🍂",
+                    "🍃",
+                    "🍁"
+                ]),
+            ("clean your room",
+                [
+                    "🧹",
+                    "🧼",
+                    "🧽",
+                    "🧴"
+                ]),
+            ("fold the laundry",
+                [
+                    "👕",
+                    "🎽",
+                    "👚"
+                ]),
+            ("mow the lawn",  
+                [
+                    "🪓",
+                    "🗡️",
+                    "⚔️",
+                    "🌿", 
+                    "🔪", 
+                    "🪒", 
+                ]),
+            ("rake the leaves", 
+                [
+                    "🧹",
+                    "🍂",
+                    "🍃",
+                    "🍁"
+                ]),
+            ("walk the dog", 
+                [
+                    "🐶",
+                    "🐕",
+                    "🦮",
+                    "🐕‍🦺"
+                ]),
+            ("wash the car", 
+                [
+                    "🚗",
+                    "🚙",
+                    "🧼",
+                    "🧽",
+                    "🧴"
+                ])
+        ]
 
 
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """Make a request for a chore, returning bool as to success.
+    async def _make_joke(self, bot:Red, msg:discord.Message) -> bool:
+        """Make a request for a chore.
 
         Parameters
         ----------
@@ -82,11 +88,10 @@ class ChoreJoke(Joke):
             The RedBot executing this function.
         msg: discord.Message
             Message to attempt a joke upon
-
         Returns
         -------
         bool
-            Success of joke.
+            Rather the joke succeeded, which in this case is always.
         """
         # Get the chore information
         method, reward = random.choice(self.request_help_method)
@@ -115,3 +120,5 @@ class ChoreJoke(Joke):
         else:
             await chore_msg.add_reaction(reward)
 
+        # This joke always succeeds
+        return True

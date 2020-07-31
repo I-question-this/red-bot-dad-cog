@@ -1,7 +1,5 @@
-from abc import ABC, abstractmethod
 import discord
 import re
-from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
 from .joke import Joke
@@ -10,16 +8,41 @@ from .util import Option, OptionType
 
 class IAmDadJoke(Joke):
     def __init__(self):
+        """Init for the "I am Dad" joke
+
+        The basic joke is a child saying "Dad, I'm hungry", and
+        the Dad responding with "Hello Hungry, I'm Dad!".
+        The name in question is put in quotations to make it more
+        obvious as Dad will interpret all words after "I'm" as the new
+        name.
+        Dad, if he is allowed, will attempt to rename the user with as many
+        characters as possible with their new name.
+
+        The reason there are "I" and "M" variations is because users and the
+        original author of Dad got in an arms race of using visually similar
+        versions of "I'm" and detecting said versions.
+        The result has unintended consequences of odd sets of characters being
+        interpreted as a valid "I'm" variation.
+        This has been deemed a feature, and not a bug.
+        """
         # Set up super class
         super().__init__("i_am_dad", 5.0)
         # Set up this class
-        i_variants = r"ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"
+        i_variants = r"ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀Ȋᵎ"\
+                r"Ⲓ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"
         m_variants = r"ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"
-        self.iam_re = re.compile(f"(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)", re.IGNORECASE)
+        self.iam_re = re.compile(
+                    f"(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)" \
+                         f"\\s*(?P<name>.*)", 
+                    re.IGNORECASE
+                )
         # Set up options
         self.guild_options.append(
-                Option(f"{self.name}_change_nickname", True, OptionType.BOOLEAN),
-                )
+                Option(
+                    f"{self.name}_change_nickname", 
+                    True, OptionType.BOOLEAN
+                ),
+            )
 
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -47,7 +70,8 @@ class IAmDadJoke(Joke):
                 their_name = await self.update_sons_nickname(msg.author,
                         their_name)
 
-            # Check if their_name will make our message too long (> 2000 characters)
+            # Check if their_name will make our message too long 
+            # (> 2000 characters)
             if len(their_name) > 1975:
                 their_name = f"{their_name[:1975]}..."
             # Construct our response
@@ -58,7 +82,8 @@ class IAmDadJoke(Joke):
             return True
 
 
-    async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
+    async def update_sons_nickname(self, son:discord.Member, nickname:str)\
+        -> str:
         """Update the nickname for our son, and return it
         If it doesn't have the correct permissions it will return nickname
         with no changes, else it will be the mention string for the Member
@@ -78,7 +103,10 @@ class IAmDadJoke(Joke):
         """
         try:
             # Change their nickname
-            await son.edit(nick=nickname[:min(32,len(nickname))], reason="I'm Dad")
+            await son.edit(
+                        nick=nickname[:min(32,len(nickname))],
+                        reason="I'm Dad"
+                    )
             new_name = son.mention
             # Check if the name was longer than the character limit
             if len(nickname) > 32:
@@ -90,6 +118,7 @@ class IAmDadJoke(Joke):
             # Return the result
             return nickname
         except discord.Forbidden:
-            # We lacked the permissions to do this, simply return the unaltered nickname
+            # We lacked the permissions to do this, simply return the 
+            # unaltered nickname
             return nickname
 

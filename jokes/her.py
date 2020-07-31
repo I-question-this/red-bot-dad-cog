@@ -1,7 +1,5 @@
-from abc import ABC, abstractmethod
 import discord
 import re
-from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
 from .joke import Joke
@@ -9,10 +7,21 @@ from .joke import Joke
 
 class HerJoke(Joke):
     def __init__(self):
+        """Init for the Her joke
+
+        The Her joke is where a word ends in "er" and
+        is responded with "Xer, I barely know her" where
+        X is the word ending in "er".
+        The reason this is funny is most obvious with words like
+        "fucker".
+        """
         # Set up super class
         super().__init__("her", 5.0)
         # Set up this class
-        self.her_re = re.compile(r".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*", re.IGNORECASE)
+        self.her_re = re.compile(
+                    r".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*", 
+                    re.IGNORECASE
+                )
 
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -39,7 +48,7 @@ class HerJoke(Joke):
             # Check if last letter is h
             if _her[-1].lower() == 'h':
                 _her = _her[:-1]
-            # Check if their_name will make our message too long (> 2000 characters)
+            # Check if the "her" word will make our message too long # (> 2000 characters)
             if len(_her) > 1960:
                 # Replace part of middle with ellipse
                 _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
