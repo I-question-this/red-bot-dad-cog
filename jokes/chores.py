@@ -8,6 +8,68 @@ from .joke import Joke
 
 
 class ChoreJoke(Joke):
+    request_help_method = [
+            ("before dinner, please", "👍"),
+            ("go", "👍"),
+            ("help me", "👍"),
+            ("if you want your allowance, ", "💵")
+        ]
+    request_help_tasks = [
+        ("clean up the yard",
+            [
+                "🧹",
+                "🍂",
+                "🍃",
+                "🍁",
+                "🚜"
+            ]),
+        ("clean your room",
+            [
+                "🧹",
+                "🧼",
+                "🧽",
+                "🧴"
+            ]),
+        ("fold the laundry",
+            [
+                "👕",
+                "🎽",
+                "👚"
+            ]),
+        ("mow the lawn",  
+            [
+                "🪓",
+                "🗡️",
+                "⚔️",
+                "🌿", 
+                "🔪", 
+                "🪒", 
+                "🚜"
+            ]),
+        ("rake the leaves", 
+            [
+                "🧹",
+                "🍂",
+                "🍃",
+                "🍁"
+            ]),
+        ("walk the dog", 
+            [
+                "🐶",
+                "🐕",
+                "🦮",
+                "🐕‍🦺"
+            ]),
+        ("wash the car", 
+            [
+                "🚗",
+                "🚙",
+                "🧼",
+                "🧽",
+                "🧴"
+            ])
+    ]
+    
     def __init__(self):
         """Init for the Chore joke
 
@@ -18,65 +80,6 @@ class ChoreJoke(Joke):
         # Set up super class
         super().__init__("chore", 0.1)
         # Set up this class
-        self.request_help_method = [
-                ("before dinner, please", "👍"),
-                ("go", "👍"),
-                ("help me", "👍"),
-                ("if you want your allowance, ", "💵")
-            ]
-        self.request_help_tasks = [
-            ("clean up the yard",
-                [
-                    "🧹",
-                    "🍂",
-                    "🍃",
-                    "🍁"
-                ]),
-            ("clean your room",
-                [
-                    "🧹",
-                    "🧼",
-                    "🧽",
-                    "🧴"
-                ]),
-            ("fold the laundry",
-                [
-                    "👕",
-                    "🎽",
-                    "👚"
-                ]),
-            ("mow the lawn",  
-                [
-                    "🪓",
-                    "🗡️",
-                    "⚔️",
-                    "🌿", 
-                    "🔪", 
-                    "🪒", 
-                ]),
-            ("rake the leaves", 
-                [
-                    "🧹",
-                    "🍂",
-                    "🍃",
-                    "🍁"
-                ]),
-            ("walk the dog", 
-                [
-                    "🐶",
-                    "🐕",
-                    "🦮",
-                    "🐕‍🦺"
-                ]),
-            ("wash the car", 
-                [
-                    "🚗",
-                    "🚙",
-                    "🧼",
-                    "🧽",
-                    "🧴"
-                ])
-        ]
 
 
     async def _make_joke(self, bot:Red, msg:discord.Message) -> bool:
@@ -93,19 +96,38 @@ class ChoreJoke(Joke):
         bool
             Rather the joke succeeded, which in this case is always.
         """
+        return await self.request_chore(bot, msg.channel, msg.author)
+
+    @classmethod
+    async def request_chore(cls, bot:Red, channel: discord.TextChannel,
+            member:discord.Member) -> bool:
+        """Make a request for a chore.
+
+        Parameters
+        ----------
+        bot: Red
+            The RedBot executing this function.
+        channel: discord.TextChannel The text channel to make the chore request in.
+        member: discord.Member
+            The member to request completion of a chore from.
+        Returns
+        -------
+        bool
+            Rather the joke succeeded, which in this case is always.
+        """
         # Get the chore information
-        method, reward = random.choice(self.request_help_method)
-        task, solutions = random.choice(self.request_help_tasks)
+        method, reward = random.choice(cls.request_help_method)
+        task, solutions = random.choice(cls.request_help_tasks)
 
         # Construct the message text
-        msg_text = f"{msg.author.mention} {method} {task}."
+        msg_text = f"{member.mention} {method} {task}."
 
         # Send the chore request
-        chore_msg = await msg.channel.send(msg_text)
+        chore_msg = await channel.send(msg_text)
 
         # Construct predicate to await user response
         def check(reaction, user):
-            return user == msg.author and\
+            return user == member and\
                     str(reaction.emoji) in solutions
 
         # Await response
@@ -122,3 +144,4 @@ class ChoreJoke(Joke):
 
         # This joke always succeeds
         return True
+
