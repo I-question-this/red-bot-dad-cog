@@ -279,13 +279,13 @@ class Dad(commands.Cog):
     # Commands
     @commands.guild_only()
     @commands.command()
-    async def request_chore_from(self, ctx:commands.Context, 
+    async def request_chore_for(self, ctx:commands.Context, 
             member:discord.Member):
-        """Make Dad request a chore from a specified user
+        """Make Dad request a chore for a specified user
         Parameters
         ----------
         member: discord.Member
-            The user to request the chore from.
+            The user to request the chore for.
         """
         await ChoreJoke.request_chore(self, ctx.channel, member)
 
