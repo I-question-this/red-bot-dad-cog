@@ -287,7 +287,11 @@ class Dad(commands.Cog):
         member: discord.Member
             The user to request the chore for.
         """
-        await ChoreJoke.request_chore(self, ctx.channel, member)
+        if member.bot:
+            await ctx.channel.send("Chores are for children.")
+            await ChoreJoke.request_chore(self, ctx.channel, ctx.author)
+        else:
+            await ChoreJoke.request_chore(self, ctx.channel, member)
 
 
     @commands.guild_only()
