@@ -65,7 +65,7 @@ class Dad(commands.Cog):
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
         # Recognized rude responses
-        self.rude_responses = [
+        self.rude_emojis = [
             "😡",
             "🤬",
             "💀",
@@ -76,58 +76,63 @@ class Dad(commands.Cog):
             "⛔",
             "💩"
         ]
+        self.rude_phrases = [
+            "bad",
+            "embarrass",
+            "fuck",
+            "get out",
+            "not fun",
+            "stink",
+            "suck"
+        ]
+
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
     # Helper commands
-    async def acknowledge_reference(self, message:discord.Message):
+    async def acknowledge_reference(self, msg:discord.Message) -> None:
         """Acknowledge if this bot is mentioned or "dad"
         "dad" means synonyms, possibly in other languages.
 
         Parameters
         ----------
-        message: discord.Message
+        msg: discord.Message
             Message to possibly acknowledge
-
         """
-        async def _ack():
-            await message.add_reaction("😉")
-
-        if self.bot.user.mentioned_in(message):
-            return await _ack()
-
-        for dad_variant in self.dad_variants:
-            if dad_variant in message.content.lower():
-                return await _ack()
+        await msg.add_reaction("😉")
 
 
-    async def ground_rude_person(self, payload:discord.RawReactionActionEvent)\
-            -> None:
-        """Ground users who reacted to Dad's messages "rudely"
+    async def get_message_from_payload(self, 
+            payload:discord.RawReactionActionEvent)\
+            -> discord.Message:
+        """Get the message from the payload information.
         Parameters
-        ----------
         payload: discord.RawReactionActionEvent
             An object detailing the message and the reaction.
+        Returns
+        -------
+        discord.Message
+            The message that the reaction was added to.
         """
-        # Check if the emoji is "offensive" to Dad
-        if not str(payload.emoji.name) in self.rude_responses:
-            # It's not, so quit
-            return
-
         # Get the channel
         channel = self.bot.get_channel(payload.channel_id)
 
         # Get Message
-        msg = await channel.fetch_message(payload.message_id)
+        return await channel.fetch_message(payload.message_id)
 
-        # Is Dad the author?
-        if not msg.author.id == self.bot.user.id:
-            # It's not, so quit
-            return
 
-        # They were rude, ground them
-        await channel.send(f"{payload.member.mention} you're grounded")
+    async def ground_rude_person(self, member:discord.Member,
+            channel:discord.TextChannel) -> None:
+        """Ground the specified user via sending a message.
+        Parameters
+        ----------
+        member: discord.Member
+            The user to be grounded
+        channel: discord.TextChannel
+            The channel to send the reprimand to.
+        """
+        await channel.send(f"{member.mention} you're grounded")
 
 
     def if_shut_up(self, ctx:commands.Context) -> bool:
@@ -158,6 +163,66 @@ class Dad(commands.Cog):
                 return True
 
 
+    async def is_added_emoji_rude(self, 
+            payload:discord.RawReactionActionEvent)\
+            -> bool:
+        """Return if the added emoji is rude to Dad.
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        Returns
+        -------
+        bool
+            Rather the added emoji was rude to Dad.
+        """
+        # Check if the emoji is "offensive" to Dad
+        return str(payload.emoji.name) in self.rude_emojis
+
+
+    def is_dad_mentioned(self, msg:discord.Message) -> bool:
+        """Return rather Dad is mentioned in the message.
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message mentions Dad or not.
+        """
+        # Directly messaged?
+        if self.bot.user.mentioned_in(msg):
+            return True
+
+        # Is the word "dad" in the message?
+        for dad_variant in self.dad_variants:
+            if dad_variant in msg.content.lower():
+                return True
+        
+        # No mentions
+        return False
+
+
+    def is_message_rude(self, msg:discord.Message) -> bool:
+        """Return rather the message is rude to Dad
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message is rude to Dad or not
+        """
+        # Is the word "dad" in the message?
+        for rude_phrase in self.rude_phrases:
+            if rude_phrase in msg.content.lower():
+                return True
+        # No rudeness
+        return False
+
+
     async def set_random_dad_presence(self) -> None:
         """Set a random dad-like presence"""
         act, emoji = random.choice(self.dad_presences)
@@ -165,7 +230,6 @@ class Dad(commands.Cog):
         name = f"{act} {emoji}"
         cust_act = discord.Game(name)
         await self.bot.change_presence(activity=cust_act)
-
 
 
     def shut_up(self, ctx:commands.Context, shut_up_time:datetime.timedelta)\
@@ -248,9 +312,17 @@ class Dad(commands.Cog):
             # Nope
             return 
 
-        # Dad always notices when he's talked about
-        # If 'dad' is mentioned, then acknowledge it
-        await self.acknowledge_reference(message)
+        # Is Dad mentioned in this message?
+        if self.is_dad_mentioned(message):
+            # Is the message rude?
+            if self.is_message_rude(message):
+                # It was, so ground them
+                await self.ground_rude_person(message.author, message.channel)
+                # We're done here
+                return
+            else:
+                # No rudeness, but Dad always knows when he's talked about.
+                await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
@@ -268,7 +340,14 @@ class Dad(commands.Cog):
         payload: discord.RawReactionActionEvent
             An object detailing the message and the reaction.
         """
-        await self.ground_rude_person(payload)
+        # Check for reasons to ground them
+        if await self.is_added_emoji_rude(payload):
+            # It was rude, so get the message
+            msg = await self.get_message_from_payload(payload)
+            # Is Dad the author?
+            if msg.author.id == self.bot.user.id:
+                # It was, so ground them.
+                await self.ground_rude_person(payload.member, msg.channel)
 
 
     @commands.Cog.listener()
