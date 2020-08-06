@@ -76,6 +76,16 @@ class Dad(commands.Cog):
             "⛔",
             "💩"
         ]
+        self.rude_phrases = [
+            "bad",
+            "embarrass",
+            "fuck",
+            "get out",
+            "not fun",
+            "stink",
+            "suck"
+        ]
+
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
@@ -90,8 +100,7 @@ class Dad(commands.Cog):
         msg: discord.Message
             Message to possibly acknowledge
         """
-        if self.is_dad_mentioned(msg):
-            await msg.add_reaction("😉")
+        await msg.add_reaction("😉")
 
 
     async def get_message_from_payload(self, 
@@ -194,6 +203,26 @@ class Dad(commands.Cog):
         # No mentions
         return False
 
+
+    def is_message_rude(self, msg:discord.Message) -> bool:
+        """Return rather the message is rude to Dad
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message is rude to Dad or not
+        """
+        # Is the word "dad" in the message?
+        for rude_phrase in self.rude_phrases:
+            if rude_phrase in msg.content.lower():
+                return True
+        # No rudeness
+        return False
+
+
     async def set_random_dad_presence(self) -> None:
         """Set a random dad-like presence"""
         act, emoji = random.choice(self.dad_presences)
@@ -283,9 +312,17 @@ class Dad(commands.Cog):
             # Nope
             return 
 
-        # Dad always notices when he's talked about
-        # If 'dad' is mentioned, then acknowledge it
-        await self.acknowledge_reference(message)
+        # Is Dad mentioned in this message?
+        if self.is_dad_mentioned(message):
+            # Is the message rude?
+            if self.is_message_rude(message):
+                # It was, so ground them
+                await self.ground_rude_person(message.author, message.channel)
+                # We're done here
+                return
+            else:
+                # No rudeness, but Dad always knows when he's talked about.
+                await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
