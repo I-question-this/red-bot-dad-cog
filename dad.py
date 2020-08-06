@@ -90,15 +90,8 @@ class Dad(commands.Cog):
         message: discord.Message
             Message to possibly acknowledge
         """
-        async def _ack():
+        if self.is_dad_mentioned:
             await message.add_reaction("😉")
-
-        if self.bot.user.mentioned_in(message):
-            return await _ack()
-
-        for dad_variant in self.dad_variants:
-            if dad_variant in message.content.lower():
-                return await _ack()
 
 
     async def get_message_from_payload(self, 
@@ -176,6 +169,29 @@ class Dad(commands.Cog):
         """
         # Check if the emoji is "offensive" to Dad
         return str(payload.emoji.name) in self.rude_responses
+
+    def is_dad_mentioned(self, msg:discord.Message) -> bool:
+        """Return rather Dad is mentioned in the message.
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message mentions Dad or not.
+        """
+        # Directly messaged?
+        if self.bot.user.mentioned_in(message):
+            return True
+
+        # Is the word "dad" in the message?
+        for dad_variant in self.dad_variants:
+            if dad_variant in message.content.lower():
+                return True
+        
+        # No mentions
+        return False
 
 
     async def set_random_dad_presence(self) -> None:
