@@ -65,7 +65,7 @@ class Dad(commands.Cog):
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
         # Recognized rude responses
-        self.rude_responses = [
+        self.rude_emojis = [
             "😡",
             "🤬",
             "💀",
@@ -81,17 +81,17 @@ class Dad(commands.Cog):
 
 
     # Helper commands
-    async def acknowledge_reference(self, message:discord.Message) -> None:
+    async def acknowledge_reference(self, msg:discord.Message) -> None:
         """Acknowledge if this bot is mentioned or "dad"
         "dad" means synonyms, possibly in other languages.
 
         Parameters
         ----------
-        message: discord.Message
+        msg: discord.Message
             Message to possibly acknowledge
         """
-        if self.is_dad_mentioned:
-            await message.add_reaction("😉")
+        if self.is_dad_mentioned(msg):
+            await msg.add_reaction("😉")
 
 
     async def get_message_from_payload(self, 
@@ -168,7 +168,8 @@ class Dad(commands.Cog):
             Rather the added emoji was rude to Dad.
         """
         # Check if the emoji is "offensive" to Dad
-        return str(payload.emoji.name) in self.rude_responses
+        return str(payload.emoji.name) in self.rude_emojis
+
 
     def is_dad_mentioned(self, msg:discord.Message) -> bool:
         """Return rather Dad is mentioned in the message.
@@ -182,17 +183,16 @@ class Dad(commands.Cog):
             Rather the message mentions Dad or not.
         """
         # Directly messaged?
-        if self.bot.user.mentioned_in(message):
+        if self.bot.user.mentioned_in(msg):
             return True
 
         # Is the word "dad" in the message?
         for dad_variant in self.dad_variants:
-            if dad_variant in message.content.lower():
+            if dad_variant in msg.content.lower():
                 return True
         
         # No mentions
         return False
-
 
     async def set_random_dad_presence(self) -> None:
         """Set a random dad-like presence"""
