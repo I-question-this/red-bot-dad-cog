@@ -64,6 +64,16 @@ class Dad(commands.Cog):
         ]
         # Dad Variants data
         self.dad_variants = ["dad", "father", "daddy", "papa"]
+        # Punishments: User {your punished}
+        self.punishments = [
+            "go to your room",
+            ", I'm taking your GameCube",
+            ", I'm taking your phone",
+            ", I'm turning off the WiFi",
+            "you're grounded",
+            "you're in time out",
+            "you're not getting your allowance"
+        ]
         # Recognized rude responses
         self.rude_emojis = [
             "😡",
@@ -122,17 +132,18 @@ class Dad(commands.Cog):
         return await channel.fetch_message(payload.message_id)
 
 
-    async def ground_rude_person(self, member:discord.Member,
+    async def punish_user(self, member:discord.Member,
             channel:discord.TextChannel) -> None:
-        """Ground the specified user via sending a message.
+        """Punish the specified user via sending a message.
         Parameters
         ----------
         member: discord.Member
-            The user to be grounded
+            The user to be punished
         channel: discord.TextChannel
             The channel to send the reprimand to.
         """
-        await channel.send(f"{member.mention} you're grounded")
+        await channel.send(
+                f"{member.mention} {random.choice(self.punishments)}.")
 
 
     def if_shut_up(self, ctx:commands.Context) -> bool:
@@ -317,7 +328,7 @@ class Dad(commands.Cog):
             # Is the message rude?
             if self.is_message_rude(message):
                 # It was, so ground them
-                await self.ground_rude_person(message.author, message.channel)
+                await self.punish_user(message.author, message.channel)
                 # We're done here
                 return
             else:
@@ -347,7 +358,7 @@ class Dad(commands.Cog):
             # Is Dad the author?
             if msg.author.id == self.bot.user.id:
                 # It was, so ground them.
-                await self.ground_rude_person(payload.member, msg.channel)
+                await self.punish_user(payload.member, msg.channel)
 
 
     @commands.Cog.listener()
