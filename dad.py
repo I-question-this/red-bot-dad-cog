@@ -88,6 +88,7 @@ class Dad(commands.Cog):
         ]
         self.rude_phrases = [
             "bad",
+            "boo",
             "embarrass",
             "fuck",
             "get out",
