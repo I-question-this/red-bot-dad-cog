@@ -102,9 +102,12 @@ class Dad(commands.Cog):
             "kill",
             "murder",
             "not fun",
+            "piss",
             "remove",
+            "screw",
             "stink",
-            "suck"
+            "suck",
+            "tosser"
         ]
 
         # Shut Up Dad Data
