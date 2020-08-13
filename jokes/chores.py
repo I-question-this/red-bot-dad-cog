@@ -99,6 +99,7 @@ class ChoreJoke(Joke):
         """
         return await self.request_chore(bot, msg.channel, msg.author)
 
+
     @classmethod
     async def request_chore(cls, bot:Red, channel: discord.TextChannel,
             member:discord.Member) -> bool:
@@ -136,7 +137,7 @@ class ChoreJoke(Joke):
             # User gets 60s to guess, any non-matching emojis
             # Result in nothing occurring.
             reaction, user = await bot.bot.wait_for(
-                    "reaction_add", timeout=60.0,
+                    "reaction_add", timeout=600.0,
                     check=check)
         except asyncio.TimeoutError:
             await chore_msg.add_reaction("👎")
