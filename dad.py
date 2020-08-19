@@ -401,6 +401,8 @@ class Dad(commands.Cog):
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
             if await jk.make_joke(self, message):
+                # Reward user for allowing a joke to occur
+                await self.add_points_to_member(message.author, 1)
                 # Joke was successful, end
                 break
 
