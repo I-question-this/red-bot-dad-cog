@@ -265,25 +265,27 @@ class Dad(commands.Cog):
         Parameters
         ----------
         msg: discord.Message
-            Message to 
+            Message to star
         """
         await msg.add_reaction(random.choice(self.favorite_child_emojis))
 
 
-    async def thank_user(self, member:discord.Member,
-            channel:discord.TextChannel) -> None:
+    async def thank_message_author(self, msg:discord.Message) -> None:
         """Thank the specified user via sending a message.
         Parameters
         ----------
-        member: discord.Member
-            The user to be punished
-        channel: discord.TextChannel
-            The channel to send the reprimand to.
+        msg: discord.Message
+            Message to either emote to or thank the author of.
         """
         # Add a point
-        await self.add_points_to_member(member, 3)
-        # Send them a verbal thank you
-        await channel.send(f"Thank you {member.mention}.")
+        await self.add_points_to_member(msg.author, 3)
+        # Thank the user
+        if random.randint(0,19) == 0:
+            # Send them a verbal thank you
+            await msg.channel.send(f"Thank you {msg.author.mention}.")
+        else:
+            # Send them a nice emoji
+            await msg.add_reaction(random.choice(self.nice_emojis))
 
 
     def if_shut_up(self, ctx:commands.Context) -> bool:
@@ -513,7 +515,7 @@ class Dad(commands.Cog):
             # Is the message nice?
             elif self.is_message_nice(message):
                 # It was, so thank you.
-                await self.thank_user(message.author, message.channel)
+                await self.thank_message_author(message)
             else:
                 # Nothing interesting, so just wink at it.
                 await self.acknowledge_reference(message)
