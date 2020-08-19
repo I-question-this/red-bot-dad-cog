@@ -194,10 +194,11 @@ class Dad(commands.Cog):
         favorite_child = None
         # Find the favorite child
         for member in guild.members:
-            points = await self._conf.member(member).points()
-            if points > 0 and points > max_points:
-                max_points = points
-                favorite_child = member
+            if not member.bot:
+                points = await self._conf.member(member).points()
+                if points > 0 and points > max_points:
+                    max_points = points
+                    favorite_child = member
         # Return the favorite child 
         return favorite_child
 
@@ -572,7 +573,8 @@ class Dad(commands.Cog):
         # Turn into formatted strings
         rankings = []
         for points, member in sorted_members:
-            rankings.append(f"{member.display_name}: {points}")
+            if not member.bot:
+                rankings.append(f"{member.display_name}: {points}")
         # Send the results
         contents = dict(
                 title = "My Children's Rankings",
