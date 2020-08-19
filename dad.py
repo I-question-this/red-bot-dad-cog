@@ -16,6 +16,7 @@ from .jokes.joke import Joke, NoSuchOption
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = dict()
+_DEFAULT_MEMBER = {"points": 0}
 
 
 
@@ -45,6 +46,7 @@ class Dad(commands.Cog):
                 cog_name=f"{self.__class__.__name__}", force_registration=True
                 )
         self._conf.register_guild(**_DEFAULT_GUILD)
+        self._conf.register_member(**_DEFAULT_MEMBER)
         self.shut_up_until = defaultdict(lambda: None)
         # Dad Presence Data
         self.dad_presences = [
@@ -73,6 +75,32 @@ class Dad(commands.Cog):
             "you're grounded",
             "you're in time out",
             "you're not getting your allowance"
+        ]
+        self.favorite_child_emojis = [
+                "⭐",
+                "🌠",
+                "🌟"
+            ]
+        # Recognized nice responses
+        self.nice_emojis = [
+            "😉",
+            "😄",
+            "😆",
+            "👍",
+            "🤣",
+            "😂",
+            "😹",
+            "⭐",
+            "🌠",
+            "🌟"
+        ]
+        self.nice_phrases = [
+            "fav",
+            "funny",
+            "great",
+            "thank",
+            "ty",
+            "wonderful"
         ]
         # Recognized rude responses
         self.rude_emojis = [
@@ -127,6 +155,50 @@ class Dad(commands.Cog):
         await msg.add_reaction("😉")
 
 
+    async def add_points_to_member(self, member:discord.Member, points:int)\
+            -> None:
+        """Adds points to the specified users total
+
+        Parameters
+        ----------
+        member: discord.Member
+            Member to add points to
+        points: int
+            Points to add. Note the points "added" can be negative.
+        """
+        # Get current points
+        current_points = await self._conf.member(member).points()
+        # Set new points
+        await self._conf.member(member).points.set(current_points + points)
+
+
+    async def favorite_child_in_guild(self, guild:discord.Guild)\
+            -> discord.Member:
+        """Returns the favorite child in a guild
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            Guild to get the favorite child from
+        Returns
+        -------
+        discord.Member
+            The favorite child. Note that this will be None if no member has a 
+            positive point value. If multiple members have the same points, 
+            then it's luck of the draw.
+        """
+        # Initialize our starting values
+        max_points = 0
+        favorite_child = None
+        # Find the favorite child
+        for member in guild.members:
+            points = await self._conf.member(member).points()
+            if points > 0 and points > max_points:
+                favorite_child = member
+        # Return the favorite child 
+        return favorite_child
+
+
     async def get_message_from_payload(self, 
             payload:discord.RawReactionActionEvent)\
             -> discord.Message:
@@ -146,6 +218,25 @@ class Dad(commands.Cog):
         return await channel.fetch_message(payload.message_id)
 
 
+    async def is_favorite_child_in_guild(self, member:discord.Member,
+            guild:discord.Guild) -> bool:
+        """Returns if the member is the favorite child of the guild
+        Parameters
+        ----------
+        member: discord.Member
+            The user to ask if it's the favorite.
+        guild: discord.Guild
+            The guild to determine the favorite child of.
+        """
+        # Get the favorite child of the guild
+        favorite_child = await self.favorite_child_in_guild(guild)
+        if favorite_child is None:
+            return False
+        else:
+            # Return if the given member is the favorite child
+            return member.id == favorite_child.id
+
+
     async def punish_user(self, member:discord.Member,
             channel:discord.TextChannel) -> None:
         """Punish the specified user via sending a message.
@@ -156,8 +247,39 @@ class Dad(commands.Cog):
         channel: discord.TextChannel
             The channel to send the reprimand to.
         """
+        # Decrement a point
+        await self.add_points_to_member(member, -1)
+        # Send them a verbal punishment
         await channel.send(
                 f"{member.mention} {random.choice(self.punishments)}.")
+
+
+    async def star_message(self, msg:discord.Message) -> None:
+        """Star a message, usually because it was written by
+        the favorite child.
+
+        Parameters
+        ----------
+        msg: discord.Message
+            Message to 
+        """
+        await msg.add_reaction(random.choice(self.favorite_child_emojis))
+
+
+    async def thank_user(self, member:discord.Member,
+            channel:discord.TextChannel) -> None:
+        """Thank the specified user via sending a message.
+        Parameters
+        ----------
+        member: discord.Member
+            The user to be punished
+        channel: discord.TextChannel
+            The channel to send the reprimand to.
+        """
+        # Add a point
+        await self.add_points_to_member(member, 1)
+        # Send them a verbal thank you
+        await channel.send(f"Thank you {member.mention}.")
 
 
     def if_shut_up(self, ctx:commands.Context) -> bool:
@@ -186,6 +308,23 @@ class Dad(commands.Cog):
             else:
                 # Dad is still in time out
                 return True
+
+
+    async def is_added_emoji_nice(self, 
+            payload:discord.RawReactionActionEvent)\
+            -> bool:
+        """Return if the added emoji is nice to Dad.
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        Returns
+        -------
+        bool
+            Rather the added emoji was nice to Dad.
+        """
+        # Check if the emoji is "offensive" to Dad
+        return str(payload.emoji.name) in self.nice_emojis
 
 
     async def is_added_emoji_rude(self, 
@@ -226,6 +365,25 @@ class Dad(commands.Cog):
                 return True
         
         # No mentions
+        return False
+
+
+    def is_message_nice(self, msg:discord.Message) -> bool:
+        """Return rather the message is nice to Dad
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message is nice to Dad or not
+        """
+        # Is the word "dad" in the message?
+        for nice_phrase in self.nice_phrases:
+            if nice_phrase in msg.content.lower():
+                return True
+        # No rudeness
         return False
 
 
@@ -325,6 +483,11 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
+        # Check if the user is the favorite child, if so add a star to their 
+        # message
+        if await self.is_favorite_child_in_guild(message.author, message.guild):
+            await self.star_message(message)
+
         # Randomly change the status after a message is received
         if random.randint(1,100) == 1:
             await self.set_random_dad_presence()
@@ -343,15 +506,19 @@ class Dad(commands.Cog):
             if self.is_message_rude(message):
                 # It was, so ground them
                 await self.punish_user(message.author, message.channel)
-                # We're done here
-                return
+            # Is the message nice?
+            elif self.is_message_nice(message):
+                # It was, so thank you.
+                await self.thank_user(message.author, message.channel)
             else:
-                # No rudeness, but Dad always knows when he's talked about.
+                # Nothing interesting, so just wink at it.
                 await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
             if await jk.make_joke(self, message):
+                # Reward user for allowing a joke to occur
+                await self.add_points_to_member(message.author, 1)
                 # Joke was successful, end
                 break
 
@@ -373,6 +540,13 @@ class Dad(commands.Cog):
             if msg.author.id == self.bot.user.id:
                 # It was, so ground them.
                 await self.punish_user(payload.member, msg.channel)
+        elif await self.is_added_emoji_nice(payload):
+            # It was nice, so get the message
+            msg = await self.get_message_from_payload(payload)
+            # Is Dad the author?
+            if msg.author.id == self.bot.user.id:
+                # It was, so silently reward them
+                await self.add_points_to_member(payload.member, 1)
 
 
     @commands.Cog.listener()
@@ -381,6 +555,42 @@ class Dad(commands.Cog):
 
 
     # Commands
+    @commands.guild_only()
+    @commands.command()
+    async def ranking(self, ctx:commands.Context):
+        """What are the points assigned to all the users?
+        """
+        # Sort members by points
+        sorted_members = list(sorted(
+                [(await self._conf.member(member).points(), member) for 
+                    member in ctx.guild.members],
+                key=lambda pair: -pair[0]
+            ))
+        # Turn into formatted strings
+        rankings = []
+        for points, member in sorted_members:
+            rankings.append(f"{member.mention}: {points}")
+        # Send the results
+        contents = dict(
+                title = "My Children's Rankings",
+                description = "\n".join(rankings)
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def favorite_child(self, ctx:commands.Context):
+        """Who is Dad's favorite child (in this server)?
+        """
+        favorite_child = await self.favorite_child_in_guild(ctx.guild)
+        if favorite_child is None:
+            await ctx.channel.send("None of you are worth my love.")
+        else:
+            await ctx.channel.send(f"{favorite_child.mention} is my"\
+                    " favorite child.")
+
+
     @commands.guild_only()
     @commands.command()
     async def request_chore_for(self, ctx:commands.Context, 
