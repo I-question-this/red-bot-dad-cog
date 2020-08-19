@@ -81,8 +81,15 @@ class Dad(commands.Cog):
                 "🌠",
                 "🌟"
             ]
-        # Recognized nice responces
+        # Recognized nice responses
         self.nice_emojis = [
+            "😉",
+            "😄",
+            "😆",
+            "👍",
+            "🤣",
+            "😂",
+            "😹"
         ]
         self.nice_phrases = [
             "funny",
@@ -299,6 +306,23 @@ class Dad(commands.Cog):
                 return True
 
 
+    async def is_added_emoji_nice(self, 
+            payload:discord.RawReactionActionEvent)\
+            -> bool:
+        """Return if the added emoji is nice to Dad.
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        Returns
+        -------
+        bool
+            Rather the added emoji was nice to Dad.
+        """
+        # Check if the emoji is "offensive" to Dad
+        return str(payload.emoji.name) in self.nice_emojis
+
+
     async def is_added_emoji_rude(self, 
             payload:discord.RawReactionActionEvent)\
             -> bool:
@@ -512,6 +536,13 @@ class Dad(commands.Cog):
             if msg.author.id == self.bot.user.id:
                 # It was, so ground them.
                 await self.punish_user(payload.member, msg.channel)
+        elif await self.is_added_emoji_nice(payload):
+            # It was nice, so get the message
+            msg = await self.get_message_from_payload(payload)
+            # Is Dad the author?
+            if msg.author.id == self.bot.user.id:
+                # It was, so silently reward them
+                await self.add_points_to_member(payload.member, 1)
 
 
     @commands.Cog.listener()
