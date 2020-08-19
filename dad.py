@@ -16,6 +16,7 @@ from .jokes.joke import Joke, NoSuchOption
 
 log = logging.getLogger("red.dad")
 _DEFAULT_GUILD = dict()
+_DEFAULT_MEMBER = {"points": 0}
 
 
 
@@ -45,6 +46,7 @@ class Dad(commands.Cog):
                 cog_name=f"{self.__class__.__name__}", force_registration=True
                 )
         self._conf.register_guild(**_DEFAULT_GUILD)
+        self._conf.register_member(**_DEFAULT_MEMBER)
         self.shut_up_until = defaultdict(lambda: None)
         # Dad Presence Data
         self.dad_presences = [
@@ -125,6 +127,50 @@ class Dad(commands.Cog):
             Message to possibly acknowledge
         """
         await msg.add_reaction("😉")
+
+
+    async def add_points_to_member(self, member:discord.Member, points:int)\
+            -> None:
+        """Adds points to the specified users total
+
+        Parameters
+        ----------
+        member: discord.Member
+            Member to add points to
+        points: int
+            Points to add. Note the points "added" can be negative.
+        """
+        # Get current points
+        current_points = await self._conf.member(member).points()
+        # Set new points
+        await self._conf.member(member).points.set(current_points + points)
+
+
+    async def favorite_child_in_guild(self, guild:discord.Guild)\
+            -> discord.Member:
+        """Returns the favorite child in a guild
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            Guild to get the favorite child from
+        Returns
+        -------
+        discord.Member
+            The favorite child. Note that this will be None if no member has a 
+            positive point value. If multiple members have the same points, 
+            then it's luck of the draw.
+        """
+        # Initialize our starting values
+        max_points = 0
+        favorite_child = None
+        # Find the favorite child
+        for member in guild.members:
+            points = await self._conf.member(member).points()
+            if points > 0 and points > max_points:
+                favorite_child = member
+        # Return the favorite child 
+        return favorite_child
 
 
     async def get_message_from_payload(self, 
@@ -381,6 +427,19 @@ class Dad(commands.Cog):
 
 
     # Commands
+    @commands.guild_only()
+    @commands.command()
+    async def favorite_child(self, ctx:commands.Context):
+        """Who is Dad's favorite child (in this server)?
+        """
+        favorite_child = await self.favorite_child_in_guild(ctx.guild)
+        if favorite_child is None:
+            await ctx.channel.send("None of you are worth my love.")
+        else:
+            await ctx.channel.send(f"{favorite_child.mention} is my"\
+                    " favorite child.")
+
+
     @commands.guild_only()
     @commands.command()
     async def request_chore_for(self, ctx:commands.Context, 

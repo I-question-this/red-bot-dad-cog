@@ -141,8 +141,10 @@ class ChoreJoke(Joke):
                     check=check)
         except asyncio.TimeoutError:
             await chore_msg.add_reaction("👎")
+            await bot.add_points_to_member(user, -10)
         else:
             await chore_msg.add_reaction(reward)
+            await bot.add_points_to_member(user, 5)
 
         # This joke always succeeds
         return True
