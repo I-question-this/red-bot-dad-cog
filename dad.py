@@ -251,7 +251,7 @@ class Dad(commands.Cog):
             The channel to send the reprimand to.
         """
         # Decrement a point
-        await self.add_points_to_member(member, -1)
+        await self.add_points_to_member(member, -3)
         # Send them a verbal punishment
         await channel.send(
                 f"{member.mention} {random.choice(self.punishments)}.")
@@ -280,7 +280,7 @@ class Dad(commands.Cog):
             The channel to send the reprimand to.
         """
         # Add a point
-        await self.add_points_to_member(member, 1)
+        await self.add_points_to_member(member, 3)
         # Send them a verbal thank you
         await channel.send(f"Thank you {member.mention}.")
 
