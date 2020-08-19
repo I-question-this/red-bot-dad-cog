@@ -553,6 +553,29 @@ class Dad(commands.Cog):
     # Commands
     @commands.guild_only()
     @commands.command()
+    async def ranking(self, ctx:commands.Context):
+        """What are the points assigned to all the users?
+        """
+        # Sort members by points
+        sorted_members = list(sorted(
+                [(await self._conf.member(member).points(), member) for 
+                    member in ctx.guild.members],
+                key=lambda pair: -pair[0]
+            ))
+        # Turn into formatted strings
+        rankings = []
+        for points, member in sorted_members:
+            rankings.append(f"{member.mention}: {points}")
+        # Send the results
+        contents = dict(
+                title = "My Children's Rankings",
+                description = "\n".join(rankings)
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.guild_only()
+    @commands.command()
     async def favorite_child(self, ctx:commands.Context):
         """Who is Dad's favorite child (in this server)?
         """
