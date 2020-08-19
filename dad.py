@@ -76,6 +76,11 @@ class Dad(commands.Cog):
             "you're in time out",
             "you're not getting your allowance"
         ]
+        self.favorite_child_emojis = [
+                "⭐",
+                "🌠",
+                "🌟"
+            ]
         # Recognized rude responses
         self.rude_emojis = [
             "😡",
@@ -192,6 +197,25 @@ class Dad(commands.Cog):
         return await channel.fetch_message(payload.message_id)
 
 
+    async def is_favorite_child_in_guild(self, member:discord.Member,
+            guild:discord.Guild) -> bool:
+        """Returns if the member is the favorite child of the guild
+        Parameters
+        ----------
+        member: discord.Member
+            The user to ask if it's the favorite.
+        guild: discord.Guild
+            The guild to determine the favorite child of.
+        """
+        # Get the favorite child of the guild
+        favorite_child = await self.favorite_child_in_guild(guild)
+        if favorite_child is None:
+            return False
+        else:
+            # Return if the given member is the favorite child
+            return member.id == favorite_child.id
+
+
     async def punish_user(self, member:discord.Member,
             channel:discord.TextChannel) -> None:
         """Punish the specified user via sending a message.
@@ -207,6 +231,18 @@ class Dad(commands.Cog):
         # Send them a verbal punishment
         await channel.send(
                 f"{member.mention} {random.choice(self.punishments)}.")
+
+
+    async def star_message(self, msg:discord.Message) -> None:
+        """Star a message, usually because it was written by
+        the favorite child.
+
+        Parameters
+        ----------
+        msg: discord.Message
+            Message to 
+        """
+        await msg.add_reaction(random.choice(self.favorite_child_emojis))
 
 
     def if_shut_up(self, ctx:commands.Context) -> bool:
@@ -373,6 +409,11 @@ class Dad(commands.Cog):
             return
         if await self.bot.is_automod_immune(message):
             return
+
+        # Check if the user is the favorite child, if so add a star to their 
+        # message
+        if await self.is_favorite_child_in_guild(message.author, message.guild):
+            await self.star_message(message)
 
         # Randomly change the status after a message is received
         if random.randint(1,100) == 1:
