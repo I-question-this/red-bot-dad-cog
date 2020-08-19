@@ -81,6 +81,16 @@ class Dad(commands.Cog):
                 "🌠",
                 "🌟"
             ]
+        # Recognized nice responces
+        self.nice_emojis = [
+        ]
+        self.nice_phrases = [
+            "funny",
+            "great",
+            "thank",
+            "ty",
+            "wonderful"
+        ]
         # Recognized rude responses
         self.rude_emojis = [
             "😡",
@@ -245,6 +255,22 @@ class Dad(commands.Cog):
         await msg.add_reaction(random.choice(self.favorite_child_emojis))
 
 
+    async def thank_user(self, member:discord.Member,
+            channel:discord.TextChannel) -> None:
+        """Thank the specified user via sending a message.
+        Parameters
+        ----------
+        member: discord.Member
+            The user to be punished
+        channel: discord.TextChannel
+            The channel to send the reprimand to.
+        """
+        # Add a point
+        await self.add_points_to_member(member, 1)
+        # Send them a verbal thank you
+        await channel.send(f"Thank you {member.mention}.")
+
+
     def if_shut_up(self, ctx:commands.Context) -> bool:
         """Is Dad supposed to shut up?
 
@@ -311,6 +337,25 @@ class Dad(commands.Cog):
                 return True
         
         # No mentions
+        return False
+
+
+    def is_message_nice(self, msg:discord.Message) -> bool:
+        """Return rather the message is nice to Dad
+        Parameters
+        ----------
+        msg: discord.Message
+            The message to investigate.
+        Returns
+        -------
+        bool
+            Rather the message is nice to Dad or not
+        """
+        # Is the word "dad" in the message?
+        for nice_phrase in self.nice_phrases:
+            if nice_phrase in msg.content.lower():
+                return True
+        # No rudeness
         return False
 
 
@@ -433,10 +478,12 @@ class Dad(commands.Cog):
             if self.is_message_rude(message):
                 # It was, so ground them
                 await self.punish_user(message.author, message.channel)
-                # We're done here
-                return
+            # Is the message nice?
+            elif self.is_message_nice(message):
+                # It was, so thank you.
+                await self.thank_user(message.author, message.channel)
             else:
-                # No rudeness, but Dad always knows when he's talked about.
+                # Nothing interesting, so just wink at it.
                 await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
