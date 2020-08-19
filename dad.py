@@ -202,6 +202,9 @@ class Dad(commands.Cog):
         channel: discord.TextChannel
             The channel to send the reprimand to.
         """
+        # Decrement a point
+        await self.add_points_to_member(member, -1)
+        # Send them a verbal punishment
         await channel.send(
                 f"{member.mention} {random.choice(self.punishments)}.")
 
