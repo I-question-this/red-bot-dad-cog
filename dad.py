@@ -89,7 +89,10 @@ class Dad(commands.Cog):
             "👍",
             "🤣",
             "😂",
-            "😹"
+            "😹",
+            "⭐",
+            "🌠",
+            "🌟"
         ]
         self.nice_phrases = [
             "funny",
