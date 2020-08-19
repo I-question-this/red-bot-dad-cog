@@ -98,6 +98,8 @@ class Dad(commands.Cog):
             "fav",
             "funny",
             "great",
+            "like",
+            "love",
             "thank",
             "ty",
             "wonderful"
