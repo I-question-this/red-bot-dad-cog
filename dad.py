@@ -572,7 +572,7 @@ class Dad(commands.Cog):
         # Turn into formatted strings
         rankings = []
         for points, member in sorted_members:
-            rankings.append(f"{member.mention}: {points}")
+            rankings.append(f"{member.display_name}: {points}")
         # Send the results
         contents = dict(
                 title = "My Children's Rankings",
