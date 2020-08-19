@@ -196,6 +196,7 @@ class Dad(commands.Cog):
         for member in guild.members:
             points = await self._conf.member(member).points()
             if points > 0 and points > max_points:
+                max_points = points
                 favorite_child = member
         # Return the favorite child 
         return favorite_child
