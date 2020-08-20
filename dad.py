@@ -15,7 +15,7 @@ from .jokes.joke import Joke, NoSuchOption
 
 
 log = logging.getLogger("red.dad")
-_DEFAULT_GUILD = dict()
+_DEFAULT_GUILD = {"favorite_child": None}
 _DEFAULT_MEMBER = {"points": 0}
 
 
@@ -171,11 +171,13 @@ class Dad(commands.Cog):
         current_points = await self._conf.member(member).points()
         # Set new points
         await self._conf.member(member).points.set(current_points + points)
+        # Recalculate favorite child for the associated guild
+        await self.calculate_favorite_child_in_guild(member.guild)
 
 
-    async def favorite_child_in_guild(self, guild:discord.Guild)\
-            -> discord.Member:
-        """Returns the favorite child in a guild
+    async def calculate_favorite_child_in_guild(self, guild:discord.Guild)\
+            -> None:
+        """Calculates the favorite child in a guild
 
         Parameters
         ----------
@@ -183,10 +185,6 @@ class Dad(commands.Cog):
             Guild to get the favorite child from
         Returns
         -------
-        discord.Member
-            The favorite child. Note that this will be None if no member has a 
-            positive point value. If multiple members have the same points, 
-            then it's luck of the draw.
         """
         # Initialize our starting values
         max_points = 0
@@ -198,8 +196,12 @@ class Dad(commands.Cog):
                 if points > 0 and points > max_points:
                     max_points = points
                     favorite_child = member
-        # Return the favorite child 
-        return favorite_child
+        # Save the favorite child 
+        if favorite_child is not None:
+            await self._conf.guild(guild).favorite_child.set(
+                    favorite_child.id)
+        else:
+            await self._conf.guild(guild).favorite_child.set(None)
 
 
     async def get_message_from_payload(self, 
@@ -232,12 +234,12 @@ class Dad(commands.Cog):
             The guild to determine the favorite child of.
         """
         # Get the favorite child of the guild
-        favorite_child = await self.favorite_child_in_guild(guild)
-        if favorite_child is None:
+        fav_id = await self._conf.guild(guild).favorite_child()
+        if fav_id is None:
             return False
         else:
             # Return if the given member is the favorite child
-            return member.id == favorite_child.id
+            return member.id == int(fav_id)
 
 
     async def punish_user(self, member:discord.Member,
@@ -589,11 +591,14 @@ class Dad(commands.Cog):
     async def favorite_child(self, ctx:commands.Context):
         """Who is Dad's favorite child (in this server)?
         """
-        favorite_child = await self.favorite_child_in_guild(ctx.guild)
-        if favorite_child is None:
+        # Get the id number
+        fav_id = await self._conf.guild(ctx.guild).favorite_child()
+        # Find the member with the specified id number
+        if fav_id is None:
             await ctx.channel.send("None of you are worth my love.")
         else:
-            await ctx.channel.send(f"{favorite_child.mention} is my"\
+            fav_child = discord.utils.get(ctx.guild.members, id=int(fav_id))
+            await ctx.channel.send(f"{fav_child.mention} is my"\
                     " favorite child.")
 
 
