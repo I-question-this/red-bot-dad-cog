@@ -90,9 +90,6 @@ class Dad(commands.Cog):
             "🤣",
             "😂",
             "😹",
-            "⭐",
-            "🌠",
-            "🌟"
         ]
         self.nice_phrases = [
             "fav",
@@ -330,7 +327,8 @@ class Dad(commands.Cog):
             Rather the added emoji was nice to Dad.
         """
         # Check if the emoji is "offensive" to Dad
-        return str(payload.emoji.name) in self.nice_emojis
+        return str(payload.emoji.name) in self.nice_emojis or \
+                str(payload.emoji.name) in self.favorite_child_emojis
 
 
     async def is_added_emoji_rude(self, 
