@@ -508,6 +508,8 @@ class Dad(commands.Cog):
 
         # Is Dad mentioned in this message?
         if self.is_dad_mentioned(message):
+            # Dad always winks, he always knows
+            await self.acknowledge_reference(message)
             # Is the message rude?
             if self.is_message_rude(message):
                 # It was, so ground them
@@ -516,9 +518,6 @@ class Dad(commands.Cog):
             elif self.is_message_nice(message):
                 # It was, so thank you.
                 await self.thank_message_author(message)
-            else:
-                # Nothing interesting, so just wink at it.
-                await self.acknowledge_reference(message)
 
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
