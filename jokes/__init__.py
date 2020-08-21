@@ -7,8 +7,8 @@ from .chores import ChoreJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
 from .ok_boomer import OkBoomerJoke
-    from .rank import RankJoke
-    from .smashing import SmashingJoke
+from .rank import RankJoke
+from .smashing import SmashingJoke
 
 # Dictionary to save registered Joke objects
 JOKES = {
