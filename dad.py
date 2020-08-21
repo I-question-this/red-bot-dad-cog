@@ -691,3 +691,42 @@ class Dad(commands.Cog):
                 )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
+
+    @dad_settings.command()
+    async def reset_points(self, ctx:commands.Context, member:discord.Member):
+        """Admin command for resetting an individual user's points with Dad
+
+        Parameters
+        ----------
+        member: discord.Member
+            Member of which points are being reset
+        """
+        # Set new points
+        await self._conf.member(member).points.set(0)
+        # Recalculate favorite child for the associated guild
+        await self.calculate_favorite_child_in_guild(ctx.guild)
+        # Inform the user that they have reset the points appropriately
+        contents = dict(
+                title = "Points have been erased",
+                description = f"I have lost all favor for {member.mention}"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @dad_settings.command()
+    async def reset_all_points(self, ctx: commands.Context):
+        """Admin command for resetting points for all of Dad's children
+        """
+        # Reset Dad Points (TM) for all users in the server
+        for member in ctx.guild.members:
+            if not member.bot:
+                await self._conf.member(member).points.set(0)
+
+        # Recalculate favorite child for the associated guild
+        await self.calculate_favorite_child_in_guild(ctx.guild)
+        # Inform the user that they have reset the points appropriately
+        contents = dict(
+            title="Points have been erased",
+            description="I have lost favor in all my children"
+        )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
