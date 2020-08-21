@@ -3,6 +3,7 @@ import inspect
 import sys
 
 from .joke import Joke
+from .becky import BeckyJoke
 from .chores import ChoreJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
@@ -17,6 +18,7 @@ JOKES = {
     "IAmDadJoke": IAmDadJoke(),
     "OkBoomerJoke": OkBoomerJoke(),
     "RankJoke": RankJoke(),
-    "SmashingJoke": SmashingJoke()
+    "SmashingJoke": SmashingJoke(),
+    "BeckyJoke": BeckyJoke()
 }
 
