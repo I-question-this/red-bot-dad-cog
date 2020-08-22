@@ -15,7 +15,7 @@ from .jokes.joke import Joke, NoSuchOption
 
 
 log = logging.getLogger("red.dad")
-_DEFAULT_GUILD = {"favorite_child": None}
+_DEFAULT_GUILD = {"favorite_child": None, "hated_child": None}
 _DEFAULT_MEMBER = {"points": 0}
 
 
@@ -77,10 +77,17 @@ class Dad(commands.Cog):
             "you're not getting your allowance"
         ]
         self.favorite_child_emojis = [
-                "⭐",
-                "🌠",
-                "🌟"
-            ]
+            "⭐",
+            "🌠",
+            "🌟"
+        ]
+        self.hated_child_emojis = [
+            "🤬",
+            "🖕",
+            "🚫",
+            "⛔",
+            "💩"
+        ]
         # Recognized nice responses
         self.nice_emojis = [
             "😉",
@@ -172,36 +179,49 @@ class Dad(commands.Cog):
         # Set new points
         await self._conf.member(member).points.set(current_points + points)
         # Recalculate favorite child for the associated guild
-        await self.calculate_favorite_child_in_guild(member.guild)
+        await self.calculate_faovortism_in_guild(member.guild)
 
 
-    async def calculate_favorite_child_in_guild(self, guild:discord.Guild)\
+    async def calculate_faovortism_in_guild(self, guild:discord.Guild)\
             -> None:
         """Calculates the favorite child in a guild
 
         Parameters
         ----------
         guild: discord.Guild
-            Guild to get the favorite child from
+            Guild to get the favoritism in
         Returns
         -------
         """
         # Initialize our starting values
         max_points = 0
         favorite_child = None
-        # Find the favorite child
+        least_points = 0
+        hated_child = None
         for member in guild.members:
             if not member.bot:
                 points = await self._conf.member(member).points()
-                if points > 0 and points > max_points:
-                    max_points = points
-                    favorite_child = member
+                if points != 0:
+                    if points > max_points:
+                        max_points = points
+                        favorite_child = member
+                    if points < least_points:
+                        least_points = points
+                        hated_child = member
+
         # Save the favorite child 
         if favorite_child is not None:
             await self._conf.guild(guild).favorite_child.set(
                     favorite_child.id)
         else:
             await self._conf.guild(guild).favorite_child.set(None)
+
+        # Save the hated child 
+        if hated_child is not None:
+            await self._conf.guild(guild).hated_child.set(
+                    hated_child.id)
+        else:
+            await self._conf.guild(guild).hated_child.set(None)
 
 
     async def get_message_from_payload(self, 
@@ -242,6 +262,25 @@ class Dad(commands.Cog):
             return member.id == int(fav_id)
 
 
+    async def is_hated_child_in_guild(self, member:discord.Member,
+            guild:discord.Guild) -> bool:
+        """Returns if the member is the hated child of the guild
+        Parameters
+        ----------
+        member: discord.Member
+            The user to ask if it's the favorite.
+        guild: discord.Guild
+            The guild to determine the favorite child of.
+        """
+        # Get the hate child of the guild
+        hate_id = await self._conf.guild(guild).hated_child()
+        if hate_id is None:
+            return False
+        else:
+            # Return if the given member is the favorite child
+            return member.id == int(hate_id)
+
+
     async def punish_user(self, member:discord.Member,
             channel:discord.TextChannel) -> None:
         """Punish the specified user via sending a message.
@@ -257,18 +296,6 @@ class Dad(commands.Cog):
         # Send them a verbal punishment
         await channel.send(
                 f"{member.mention} {random.choice(self.punishments)}.")
-
-
-    async def star_message(self, msg:discord.Message) -> None:
-        """Star a message, usually because it was written by
-        the favorite child.
-
-        Parameters
-        ----------
-        msg: discord.Message
-            Message to star
-        """
-        await msg.add_reaction(random.choice(self.favorite_child_emojis))
 
 
     async def thank_message_author(self, msg:discord.Message) -> None:
@@ -491,10 +518,15 @@ class Dad(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        # Check if the user is the favorite child, if so add a star to their 
-        # message
+        # Check if the user is the favorite child, if so add something nice
+        # to their message
         if await self.is_favorite_child_in_guild(message.author, message.guild):
-            await self.star_message(message)
+            await message.add_reaction(
+                    random.choice(self.favorite_child_emojis))
+        # Check if the user is the hated child, if so add something terrible
+        # to their message
+        elif await self.is_hated_child_in_guild(message.author, message.guild):
+            await message.add_reaction(random.choice(self.hated_child_emojis))
 
         # Randomly change the status after a message is received
         if random.randint(1,100) == 1:
@@ -604,6 +636,22 @@ class Dad(commands.Cog):
 
     @commands.guild_only()
     @commands.command()
+    async def hated_child(self, ctx:commands.Context):
+        """Who is Dad's most hated child (in this server)?
+        """
+        # Get the id number
+        hate_id = await self._conf.guild(ctx.guild).hated_child()
+        # Find the member with the specified id number
+        if hate_id is None:
+            await ctx.channel.send("I don't hate any of my children.")
+        else:
+            hate_child = discord.utils.get(ctx.guild.members, id=int(hate_id))
+            await ctx.channel.send(f"{hate_child.mention} is my"\
+                    " most hated and regretted child.")
+
+
+    @commands.guild_only()
+    @commands.command()
     async def request_chore_for(self, ctx:commands.Context, 
             member:discord.Member):
         """Make Dad request a chore for a specified user
@@ -704,11 +752,11 @@ class Dad(commands.Cog):
         # Set new points
         await self._conf.member(member).points.set(0)
         # Recalculate favorite child for the associated guild
-        await self.calculate_favorite_child_in_guild(ctx.guild)
+        await self.calculate_faovortism_in_guild(ctx.guild)
         # Inform the user that they have reset the points appropriately
         contents = dict(
                 title = "Points have been erased",
-                description = f"I have lost all favor for {member.mention}"
+                description = f"I have lost all memory of {member.mention}"
                 )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
@@ -723,10 +771,11 @@ class Dad(commands.Cog):
                 await self._conf.member(member).points.set(0)
 
         # Recalculate favorite child for the associated guild
-        await self.calculate_favorite_child_in_guild(ctx.guild)
+        await self.calculate_faovortism_in_guild(ctx.guild)
         # Inform the user that they have reset the points appropriately
         contents = dict(
             title="Points have been erased",
-            description="I have lost favor in all my children"
+            description="I have lost memory of all my children"
         )
         await ctx.send(embed=discord.Embed.from_dict(contents))
+
