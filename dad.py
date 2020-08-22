@@ -268,9 +268,9 @@ class Dad(commands.Cog):
         Parameters
         ----------
         member: discord.Member
-            The user to ask if it's the favorite.
+            The user to ask if it's the hated one.
         guild: discord.Guild
-            The guild to determine the favorite child of.
+            The guild to determine the hated child of.
         """
         # Get the hate child of the guild
         hate_id = await self._conf.guild(guild).hated_child()
