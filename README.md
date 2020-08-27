@@ -25,3 +25,5 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 The purpose is to have a standarized method of turning a user's message into a joke. 
 Dad does this by randomizing the list of jokes, and then iterating through each joke until either he can make a joke with the message or he runs out of jokes.
 This can be seen in ``on_message`` method in `dad.py`.
+Further the `Joke` class adds the to the list of options that can be set for each guild.
+This allows guilds to modify the probablity that a particular joke will occur, without extra code needing to be written for that.
