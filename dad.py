@@ -4,7 +4,6 @@ import discord
 import logging
 import random
 random.seed()
-import re
 from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
@@ -14,7 +13,7 @@ from .jokes.chores import ChoreJoke
 from .jokes.joke import Joke, NoSuchOption
 
 
-log = logging.getLogger("red.dad")
+LOG = logging.getLogger("red.dad")
 _DEFAULT_GUILD = {"favorite_child": None, "hated_child": None}
 _DEFAULT_MEMBER = {"points": 0}
 
@@ -178,6 +177,10 @@ class Dad(commands.Cog):
         current_points = await self._conf.member(member).points()
         # Set new points
         await self._conf.member(member).points.set(current_points + points)
+        # Log points change
+        LOG.info(f"Points: \"{member.guild.name}\"({member.guild.id})->"\
+                f"\"{member.display_name}\"({member.id}): "\
+                f"{current_points}->{current_points + points}")
         # Recalculate favorite child for the associated guild
         await self.calculate_faovortism_in_guild(member.guild)
 
@@ -213,15 +216,31 @@ class Dad(commands.Cog):
         if favorite_child is not None:
             await self._conf.guild(guild).favorite_child.set(
                     favorite_child.id)
+            # Log recalculation of favorite child
+            LOG.info(f"Favorite Child: "\
+                    f"\"{guild.name}\"({guild.id})->"\
+                    f"\"{favorite_child.display_name}\"({favorite_child.id})")
         else:
             await self._conf.guild(guild).favorite_child.set(None)
+            # Log recalculation of favorite child
+            LOG.info(f"Favorite Child: "\
+                    f"\"{guild.name}\"({guild.id})->"\
+                    f"None")
 
         # Save the hated child 
         if hated_child is not None:
             await self._conf.guild(guild).hated_child.set(
                     hated_child.id)
+            # Log recalculation of hated child
+            LOG.info(f"Hated Child: "\
+                    f"\"{guild.name}\"({guild.id})->"\
+                    f"\"{hated_child.display_name}\"({hated_child.id})")
         else:
             await self._conf.guild(guild).hated_child.set(None)
+            # Log recalculation of hated child
+            LOG.info(f"Hated Child: "\
+                    f"\"{guild.name}\"({guild.id})->"\
+                    f"None")
 
 
     async def get_message_from_payload(self, 
@@ -291,6 +310,10 @@ class Dad(commands.Cog):
         channel: discord.TextChannel
             The channel to send the reprimand to.
         """
+        # Log punishment
+        LOG.info(f"Punish User: "\
+                f"\"{member.guild.name}\"({member.guild.id})->"\
+                f"\"{member.display_name}\"({member.id})")
         # Decrement a point
         await self.add_points_to_member(member, -3)
         # Send them a verbal punishment
@@ -305,6 +328,10 @@ class Dad(commands.Cog):
         msg: discord.Message
             Message to either emote to or thank the author of.
         """
+        # Log Thank You
+        LOG.info(f"Thank User: "\
+                f"\"{member.guild.name}\"({member.guild.id})->"\
+                f"\"{member.display_name}\"({member.id})")
         # Add a point
         await self.add_points_to_member(msg.author, 3)
         # Thank the user
@@ -725,6 +752,10 @@ class Dad(commands.Cog):
             await Joke.set_guild_option_value(self, ctx, name, new_value)
             title = "Set Response Chance: Success"
             description = f"Set {name} to {new_value}"
+            # Log points change
+            LOG.info(f"Response Chance Change: "\
+                    f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                    f"{description}")
             if "chance" in name:
                 description += "%"
         except NoSuchOption as e:
@@ -753,6 +784,11 @@ class Dad(commands.Cog):
         await self._conf.member(member).points.set(0)
         # Recalculate favorite child for the associated guild
         await self.calculate_faovortism_in_guild(ctx.guild)
+        # Log points reset for member
+        LOG.info(f"Points Reset: "\
+                f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                f"Points have been reset for "\
+                f"\"{member.display_name}\"({member.id})")
         # Inform the user that they have reset the points appropriately
         contents = dict(
                 title = "Points have been erased",
@@ -772,6 +808,11 @@ class Dad(commands.Cog):
 
         # Recalculate favorite child for the associated guild
         await self.calculate_faovortism_in_guild(ctx.guild)
+        # Log points reset for all members
+        LOG.info(f"Points Reset: "\
+                f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                f"Points have been reset for "\
+                f"all members")
         # Inform the user that they have reset the points appropriately
         contents = dict(
             title="Points have been erased",

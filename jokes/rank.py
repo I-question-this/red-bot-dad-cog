@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import discord
+import logging
 import re
 from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
@@ -7,6 +8,7 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SALUTES_DIR
 
+LOG = logging.getLogger("red.dad")
 
 class RankJoke(Joke):
     def __init__(self):
@@ -65,7 +67,11 @@ class RankJoke(Joke):
         else:
             # Construct our response
             response = {}
-            response["title"] = f"{match.group('rank').capitalize()} {match.group('title').capitalize()}"
+            response["title"] = f"{match.group('rank').capitalize()} "\
+                    f"{match.group('title').capitalize()}"
+            # Log joke
+            LOG.info(f"Rank: \"{match.group('rank')} "\
+                    f"{match.group('title')}\"")
             # Pick random salute gif
             salute_gif = random_image(SALUTES_DIR)
             # Construct embed

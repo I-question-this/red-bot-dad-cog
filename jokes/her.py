@@ -1,9 +1,11 @@
 import discord
+import logging
 import re
 from redbot.core.bot import Red
 
 from .joke import Joke
 
+LOG = logging.getLogger("red.dad")
 
 class HerJoke(Joke):
     def __init__(self):
@@ -37,14 +39,14 @@ class HerJoke(Joke):
         bool
             Rather the joke was made or not.
         """
-        _her = self.her_re.match(msg.content)
+        her_match = self.her_re.match(msg.content)
 
-        if _her is None:
+        if her_match is None:
             # No joke was possible, stop
             return False
         else:
             # Chuck the pattern, keep the match
-            _her = _her.groups("her")[1]
+            _her = her_match.groups("her")[1]
             # Check if last letter is h
             if _her[-1].lower() == 'h':
                 _her = _her[:-1]
@@ -52,6 +54,8 @@ class HerJoke(Joke):
             if len(_her) > 1960:
                 # Replace part of middle with ellipse
                 _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
+            # Log joke
+            LOG.info(f"Her: \"{her_match.groups('her')[1]}\"")
             # Construct our response
             response = f"{_her.title()}*her*, I barely know her!"
             # Send message

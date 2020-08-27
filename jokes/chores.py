@@ -1,11 +1,13 @@
 import asyncio
 import discord
+import logging
 import random
 random.seed()
 import re
 from redbot.core.bot import Red
 from .joke import Joke
 
+LOG = logging.getLogger("red.dad")
 
 class ChoreJoke(Joke):
     request_help_method = [
@@ -14,8 +16,7 @@ class ChoreJoke(Joke):
             ("help me", "👍"),
             ("if you want your allowance, ", "💵")
         ]
-    request_help_tasks = [
-        ("clean up the yard",
+    request_help_tasks = [ ("clean up the yard",
             [
                 "🧹",
                 "🍂",
@@ -134,15 +135,24 @@ class ChoreJoke(Joke):
 
         # Await response
         try:
-            # User gets 60s to guess, any non-matching emojis
+            # User gets an amount of time to guess, any non-matching emojis
             # Result in nothing occurring.
+            # Log joke
+            LOG.info(f"Chore: Requested joke for "
+                f"\"{member.display_name}\"({member.id})")
             reaction, user = await bot.bot.wait_for(
                     "reaction_add", timeout=600.0,
                     check=check)
         except asyncio.TimeoutError:
+            LOG.info(f"Chore: "
+                f"\"{member.display_name}\"({member.id}) "
+                "failed to complete the chore")
             await chore_msg.add_reaction("👎")
             await bot.add_points_to_member(member, -10)
         else:
+            LOG.info(f"Chore: "
+                f"\"{member.display_name}\"({member.id}) "
+                "succeeded to complete the chore")
             await chore_msg.add_reaction(reward)
             await bot.add_points_to_member(member, 5)
 
