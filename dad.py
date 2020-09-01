@@ -179,10 +179,10 @@ class Dad(commands.Cog):
         # Set new points
         await self._conf.member(member).points.set(current_points + points)
         # Recalculate favorite child for the associated guild
-        await self.calculate_faovortism_in_guild(member.guild)
+        await self.calculate_favoritism_in_guild(member.guild)
 
 
-    async def calculate_faovortism_in_guild(self, guild:discord.Guild)\
+    async def calculate_favoritism_in_guild(self, guild:discord.Guild)\
             -> None:
         """Calculates the favorite child in a guild
 
@@ -752,7 +752,7 @@ class Dad(commands.Cog):
         # Set new points
         await self._conf.member(member).points.set(0)
         # Recalculate favorite child for the associated guild
-        await self.calculate_faovortism_in_guild(ctx.guild)
+        await self.calculate_favoritism_in_guild(ctx.guild)
         # Inform the user that they have reset the points appropriately
         contents = dict(
                 title = "Points have been erased",
@@ -771,7 +771,7 @@ class Dad(commands.Cog):
                 await self._conf.member(member).points.set(0)
 
         # Recalculate favorite child for the associated guild
-        await self.calculate_faovortism_in_guild(ctx.guild)
+        await self.calculate_favoritism_in_guild(ctx.guild)
         # Inform the user that they have reset the points appropriately
         contents = dict(
             title="Points have been erased",
