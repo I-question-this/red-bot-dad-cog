@@ -1,10 +1,12 @@
 import discord
+import logging
 import re
 from redbot.core.bot import Red
 
 from .joke import Joke
 from .util import random_image, SMASHING_DIR
 
+LOG = logging.getLogger("red.dad")
 
 class BeckyJoke(Joke):
     def __init__(self):
@@ -48,6 +50,8 @@ class BeckyJoke(Joke):
             # No joke was possible, stop
             return False
         else:
+            # Log joke
+            LOG.info(f"Becky: {match}")
             # Construct our response
             await msg.channel.send("https://www.youtube.com/watch?v=qSJ5I5v8zwQ")
             # Return success

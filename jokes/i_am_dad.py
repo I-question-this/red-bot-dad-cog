@@ -1,10 +1,12 @@
 import discord
+import logging
 import re
 from redbot.core.bot import Red
 
 from .joke import Joke
 from .util import Option, OptionType
 
+LOG = logging.getLogger("red.dad")
 
 class IAmDadJoke(Joke):
     def __init__(self):
@@ -76,6 +78,8 @@ class IAmDadJoke(Joke):
                 their_name = f"{their_name[:1975]}..."
             # Construct our response
             response = f"Hello \"{their_name}\", {match.group('iam')} Dad!"
+            # Log joke
+            LOG.info(f"I am Dad: \"{match.group('iam')} {their_name}\"")
             # Send message
             await msg.channel.send(response)
             # Return success
