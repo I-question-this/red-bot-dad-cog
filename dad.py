@@ -330,8 +330,8 @@ class Dad(commands.Cog):
         """
         # Log Thank You
         LOG.info(f"Thank User: "\
-                f"\"{member.guild.name}\"({member.guild.id})->"\
-                f"\"{member.display_name}\"({member.id})")
+                f"\"{msg.guild.name}\"({msg.guild.id})->"\
+                f"\"{msg.author.display_name}\"({msg.author.id})")
         # Add a point
         await self.add_points_to_member(msg.author, 3)
         # Thank the user
