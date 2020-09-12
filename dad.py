@@ -11,10 +11,13 @@ from typing import List
 
 from .jokes.chores import ChoreJoke
 from .jokes.joke import Joke, NoSuchOption
+from .jokes.thats_fair import ThatsFairJoke
+from .jokes.util import OptionType
 
 
 LOG = logging.getLogger("red.dad")
-_DEFAULT_GUILD = {"favorite_child": None, "hated_child": None}
+_DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
+        "fair_child": None}
 _DEFAULT_MEMBER = {"points": 0}
 
 
@@ -580,6 +583,15 @@ class Dad(commands.Cog):
                 # It was, so thank you.
                 await self.thank_message_author(message)
 
+        # Is this the fair child?
+        if await ThatsFairJoke.is_fair_child_in_guild(self, 
+                message.author, message.guild):
+            # It is, so respond to them and quit
+            await ThatsFairJoke.respond_to_fair_child(
+                    self, message.channel)
+            await self.add_points_to_member(message.author, 1)
+            return
+
         # Does Dad notice the joke?
         for jk in random.sample(list(self.jokes.values()), len(self.jokes)):
             if await jk.make_joke(self, message):
@@ -725,10 +737,9 @@ class Dad(commands.Cog):
         """List the values for all the options for jokes"""
         guild_option_strings = []
         for opt in self.guild_options_information.values():
-            guild_option_strings.append(
-                    f"{opt.name}: "\
-                    f"{await Joke.get_guild_option(self, ctx, opt.name)}"
-                )
+            if opt.type_convertor != OptionType.HIDDEN:
+                value = await Joke.get_guild_option(self, ctx.guild, opt.name)
+                guild_option_strings.append(f"{opt.name}: {value}")
         guild_option_strings = '\n'.join(sorted(guild_option_strings))
         contents = dict(
                 title = "Response Chances",
@@ -749,7 +760,8 @@ class Dad(commands.Cog):
             The new value.
         """
         try:
-            await Joke.set_guild_option_value(self, ctx, name, new_value)
+            await Joke.set_guild_option_value(self, ctx.guild, name,
+                    new_value)
             title = "Set Response Chance: Success"
             description = f"Set {name} to {new_value}"
             # Log points change
