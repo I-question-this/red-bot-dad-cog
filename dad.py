@@ -531,6 +531,28 @@ class Dad(commands.Cog):
 
     # Listeners
     @commands.Cog.listener()
+    async def on_member_join(self, member:discord.Member):
+        # Get system channel (default channel for system messages like new 
+        # members)
+        sys_chan = member.guild.system_channel
+
+        # Check if the channel is set (it should be, but it might not be)
+        if sys_chan is None:
+            # It wasn't, so quit
+            return
+
+        # It was, so now we determine if it's a bot or a real person
+        if member.bot:
+            # It's a bot, so react coldly
+            await sys_chan.send(f"{member.mention} a robot can never truly "
+                "appreciate a father's love.")
+        else:
+            # It's a real person, so react warmly
+            await sys_chan.send(f"{member.mention} I am your new Dad, and I "\
+                    "love you.")
+
+
+    @commands.Cog.listener()
     async def on_message(self, message:discord.Message):
         """Perform actions when a message is received
 
