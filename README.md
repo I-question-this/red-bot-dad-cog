@@ -10,7 +10,8 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + Okay boomer -> ok zoomer spelled out in emojis as a reaction to this message
 + Dad will request his children complete chores via reacting with the correct emojis.
 + Dad will pick favorite and least favorite based on user behavior to his messages and chores. He'll show this to everyone by giving stars to his favorite, and rude emojis to his least favorite.
-
++ Dad will randomly make someone "the fair child", in which he will respond a set number of times to their messages with "that's fair". Inspired by 
+![image](thats_fair_origin.png)
 
 ## Adding a New Joke
 + New jokes can usually be added as a new sub-class of the Joke class in the jokes directory.
