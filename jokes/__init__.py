@@ -13,12 +13,12 @@ from .smashing import SmashingJoke
 
 # Dictionary to save registered Joke objects
 JOKES = {
+    "BeckyJoke": BeckyJoke(),
     "ChoreJoke": ChoreJoke(),
     "HerJoke": HerJoke(),
     "IAmDadJoke": IAmDadJoke(),
     "OkBoomerJoke": OkBoomerJoke(),
     "RankJoke": RankJoke(),
-    "SmashingJoke": SmashingJoke(),
-    "BeckyJoke": BeckyJoke()
+    "SmashingJoke": SmashingJoke()
 }
 
