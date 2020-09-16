@@ -76,7 +76,7 @@ class Joke(ABC):
             It means that the response chance was never made a part of the 
             default values for guilds.
         """
-        chance = await self.get_guild_option(bot, msg.channel, 
+        chance = await self.get_guild_option(bot, msg.channel.guild, 
                 f"{self.name}_chance")
         if  random.uniform(0.0, 100.0) <= chance:
             return await self._make_joke(bot, msg)
@@ -117,15 +117,15 @@ class Joke(ABC):
 
 
     @staticmethod
-    async def get_guild_option(bot: Red, ctx: commands.Context, 
+    async def get_guild_option(bot: Red, guild:discord.Guild,
             option_name: str) -> any:
         """
         Parameters
         ----------
         bot: Red
             The RedBot executing this function.
-        ctx: commands.Context
-            The context in which the joke is being made.
+        guild: discord.Guild
+            The guild to set the option for.
         option_name: str
             The option to get.
         Returns
@@ -138,21 +138,21 @@ class Joke(ABC):
             Raised if the given option_name does not exist
         """
         try:
-            return await getattr(bot._conf.guild(ctx.guild), option_name)()
+            return await getattr(bot._conf.guild(guild), option_name)()
         except AttributeError:
             raise NoSuchOption(option_name)
 
 
     @staticmethod
-    async def set_guild_option_value(bot: Red, ctx: commands.Context, 
+    async def set_guild_option_value(bot: Red, guild:discord.Guild,
             option_name: str, new_value: any):
         """
         Parameters
         ----------
         bot: Red
             The RedBot executing this function.
-        ctx: commands.Context
-            The context in which the joke is being made.
+        guild: discord.Guild
+            The guild to set the option for.
         option_name: str
             The option to set the value of.
         new_value: any
@@ -166,11 +166,11 @@ class Joke(ABC):
             # Get the type converter
             converter = bot.guild_options_information[option_name]
             # Convert the new value
-            new_value = converter.type_convertor(new_value)
+            if converter.type_convertor != OptionType.HIDDEN:
+                new_value = converter.type_convertor(new_value)
             # Set the value
-            await getattr(bot._conf.guild(ctx.guild), option_name)\
+            await getattr(bot._conf.guild(guild), option_name)\
                 .set(new_value)
         except (AttributeError, KeyError):
             raise NoSuchOption(option_name)
-
 

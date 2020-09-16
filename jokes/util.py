@@ -63,6 +63,34 @@ def convert_to_percentage(percentage: float) -> float:
         raise ValueError(f"percentage must be in the range [0.0,100.0]")
 
 
+def convert_to_non_zero_positive_int(nz_p_int: int) -> float:
+    """Input is converted to a non-zero positive integer.
+
+    Parameters
+    ----------
+    nz_p_int: int
+        The input to be converted and verified.
+    
+    Returns
+    -------
+    int
+        The converted and verified input.
+
+    Raises
+    ------
+    ValueError
+        Describes problem in conversion and/or verification.
+    """
+    try:
+        nz_p_int = int(nz_p_int)
+    except TypeError:
+        raise ValueError(f"{nz_p_int} is not a valid integer")
+    if positive_int > 0:
+        return percentage
+    else:
+        raise ValueError(f"Must be an integer above 0")
+
+
 def random_image(directory: str) -> discord.File:
     """Returns a random image from directory in the form of a discord.File
 
@@ -87,8 +115,10 @@ class OptionType(Enum):
     a string into the specified type, even doing sanity
     checks on the converted value.
     """
-    PERCENTAGE = convert_to_percentage
     BOOLEAN = convert_to_boolean
+    HIDDEN = "HIDDEN" # Don't expose this to the users
+    NONZERO_POSITIVE_INTEGER = convert_to_non_zero_positive_int
+    PERCENTAGE = convert_to_percentage
 
 
 class Option:
