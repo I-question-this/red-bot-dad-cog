@@ -80,7 +80,7 @@ class ChoreJoke(Joke):
         emoji within a short time frame.
         """
         # Set up super class
-        super().__init__("chore", 0.1)
+        super().__init__("chore", 1)
         # Set up this class
 
 
