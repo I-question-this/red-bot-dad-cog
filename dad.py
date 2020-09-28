@@ -67,7 +67,14 @@ class Dad(commands.Cog):
             ("Watch the History Channel", "📺")
         ]
         # Dad Variants data
-        self.dad_variants = ["dad", "father", "daddy", "papa"]
+        self.dad_variants = [
+                "dad", 
+                "father", 
+                "otosan",
+                "padre", 
+                "pap", 
+                "senpai"
+            ]
         # Punishments: User {your punished}
         self.punishments = [
             "go to your room",
@@ -92,6 +99,15 @@ class Dad(commands.Cog):
         ]
         # Recognized nice responses
         self.nice_emojis = [
+            "😇",
+            "☺️ ",
+            "😊",
+            "🙂",
+            "😍",
+            "🥰",
+            "😘",
+            "😗",
+            "😙",
             "😉",
             "😄",
             "😆",
@@ -99,52 +115,91 @@ class Dad(commands.Cog):
             "🤣",
             "😂",
             "😹",
+            "😻",
+            "😽",
+            "❤️ ",
+            "🧡",
+            "💛",
+            "💚",
+            "💙",
+            "💜",
+            "🖤",
+            "🤎",
+            "🤍",
+            "❣️",
+            "💕",
+            "💞",
+            "💓",
+            "💗",
+            "💖",
+            "💘",
+            "💝",
+            "💟"
         ]
         self.nice_phrases = [
             "amazing",
+            "best",
+            "fair",
             "fav",
-            "funny",
+            "fun",
             "good",
             "great",
             "like",
             "love",
+            "sorry",
             "thank",
             "ty",
+            "welcome",
             "wonderful"
         ]
         # Recognized rude responses
         self.rude_emojis = [
+            "😒",
             "😡",
             "🤬",
             "💀",
             "😴",
+            "😾",
             "☠️",
             "🖕",
+            "👊",
+            "🤛",
+            "🤜",
+            "✊",
             "🚫",
             "⛔",
-            "💩"
+            "💩",
+            "💔"
         ]
         self.rude_phrases = [
+            "abus",
+            "ass",
+            "awful",
             "bad",
             "ban",
             "boo",
+            "detestable",
             "embarrass",
             "exterminate",
             "extinguish",
             "fail",
             "fuck",
+            "hate",
             "heck",
             "hell",
+            "horrible",
             "get out",
             "kick",
             "kill",
+            "loathe",
             "murder",
-            "not fun",
+            "petty",
             "piss",
             "remove",
             "screw",
             "stink",
             "suck",
+            "thief",
             "tosser"
         ]
 
@@ -561,6 +616,9 @@ class Dad(commands.Cog):
         message: discord.Message
             The message to perform actions upon.
         """
+        with open("/tmp/emojis", "w") as fout:
+            fout.write(message.content)
+
         if isinstance(message.channel, discord.abc.PrivateChannel):
             return
         author = message.author
