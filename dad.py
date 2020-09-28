@@ -616,9 +616,6 @@ class Dad(commands.Cog):
         message: discord.Message
             The message to perform actions upon.
         """
-        with open("/tmp/emojis", "w") as fout:
-            fout.write(message.content)
-
         if isinstance(message.channel, discord.abc.PrivateChannel):
             return
         author = message.author
