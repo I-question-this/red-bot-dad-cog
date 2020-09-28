@@ -31,6 +31,7 @@ class OkBoomerJoke(Joke):
         # Set up super class
         super().__init__("ok_boomer", 100)
         # Set up this class
+        self.zoomer_re = re.compile(r"(o)?k(ay)? zoomer", re.IGNORECASE)
         self.ok_zoomer = [
                 "🆗",
                 "🇿",
@@ -41,6 +42,15 @@ class OkBoomerJoke(Joke):
                 "🇷"
             ]
         self.boomer_re = re.compile(r"(o)?k(ay)? boomer", re.IGNORECASE)
+        self.ok_boomer = [
+                "🆗",
+                "🇧",
+                "🇴",
+                "0️⃣",
+                "🇲",
+                "🇪",
+                "🇷"
+            ]
 
 
     async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -58,10 +68,21 @@ class OkBoomerJoke(Joke):
         bool
             Success of joke.
         """
+        # Check for "okay boomer"
         match = self.boomer_re.search(msg.content)
         if match is None:
-            # No joke was possible, stop
-            return False
+            # Check for "okay zoomer"
+            match = self.zoomer_re.search(msg.content)
+            if match is None:
+                # No joke was possible, stop
+                return False
+            else:
+                # Log joke
+                LOG.info(f"Ok Boomer: {match}")
+                # Add the "ok zoomer" response
+                start_adding_reactions(msg, self.ok_boomer)
+                # Return success
+                return True
         else:
             # Log joke
             LOG.info(f"Ok Boomer: {match}")
