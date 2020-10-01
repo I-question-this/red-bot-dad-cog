@@ -767,6 +767,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
+    @commands.admin()
     @commands.command()
     async def request_chore_for(self, ctx:commands.Context, 
             member:discord.Member):
