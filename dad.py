@@ -65,6 +65,7 @@ class Dad(commands.Cog):
             ("Wash the car", "🚗"),
             ("Wear socks with sandals", "🧦"),
             ("Watch the History Channel", "📺")
+            ("Getting milk","🥛")
         ]
         # Dad Variants data
         self.dad_variants = [
