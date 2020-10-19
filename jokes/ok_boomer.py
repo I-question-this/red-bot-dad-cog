@@ -43,7 +43,7 @@ class OkBoomerJoke(Joke):
         self.boomer_re = re.compile(r"(o)?k(ay)? boomer", re.IGNORECASE)
 
 
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Return success of  "ok zoomer" as emojis in response to "ok boomer"
 
         Parameters

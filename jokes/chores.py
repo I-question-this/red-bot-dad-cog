@@ -84,7 +84,7 @@ class ChoreJoke(Joke):
         # Set up this class
 
 
-    async def _make_joke(self, bot:Red, msg:discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot:Red, msg:discord.Message) -> bool:
         """Make a request for a chore.
 
         Parameters
