@@ -85,8 +85,8 @@ def convert_to_non_zero_positive_int(nz_p_int: int) -> float:
         nz_p_int = int(nz_p_int)
     except TypeError:
         raise ValueError(f"{nz_p_int} is not a valid integer")
-    if positive_int > 0:
-        return percentage
+    if nz_p_int > 0:
+        return nz_p_int
     else:
         raise ValueError(f"Must be an integer above 0")
 

@@ -80,7 +80,7 @@ class ChoreJoke(Joke):
         emoji within a short time frame.
         """
         # Set up super class
-        super().__init__("chore", 0.1)
+        super().__init__("chore", 1)
         # Set up this class
 
 
@@ -130,8 +130,7 @@ class ChoreJoke(Joke):
 
         # Construct predicate to await user response
         def check(reaction, user):
-            return user == member and\
-                    str(reaction.emoji) in solutions
+            return str(reaction.emoji) in solutions
 
         # Await response
         try:
@@ -140,7 +139,7 @@ class ChoreJoke(Joke):
             # Log joke
             LOG.info(f"Chore: Requested joke for "
                 f"\"{member.display_name}\"({member.id})")
-            reaction, user = await bot.bot.wait_for(
+            reaction, completed_user = await bot.bot.wait_for(
                     "reaction_add", timeout=600.0,
                     check=check)
         except asyncio.TimeoutError:
@@ -150,11 +149,20 @@ class ChoreJoke(Joke):
             await chore_msg.add_reaction("👎")
             await bot.add_points_to_member(member, -10)
         else:
-            LOG.info(f"Chore: "
-                f"\"{member.display_name}\"({member.id}) "
-                "succeeded to complete the chore")
-            await chore_msg.add_reaction(reward)
-            await bot.add_points_to_member(member, 5)
+            if member != completed_user:
+                LOG.info(f"Chore: "
+                    f"\"{completed_user.display_name}\"({completed_user.id}) "
+                    " sniped chore from "
+                    f"\"{member.display_name}\"({member.id})")
+                await chore_msg.add_reaction(reward)
+                await bot.add_points_to_member(completed_user, 5)
+                await bot.add_points_to_member(member, -10)
+            else:
+                LOG.info(f"Chore: "
+                    f"\"{member.display_name}\"({member.id}) "
+                    "succeeded to complete the chore")
+                await chore_msg.add_reaction(reward)
+                await bot.add_points_to_member(member, 5)
 
         # This joke always succeeds
         return True
