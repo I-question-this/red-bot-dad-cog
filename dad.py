@@ -68,7 +68,14 @@ class Dad(commands.Cog):
             ("Watch the History Channel", "📺")
         ]
         # Dad Variants data
-        self.dad_variants = ["dad", "father", "daddy", "papa"]
+        self.dad_variants = [
+                "dad", 
+                "father", 
+                "otosan",
+                "padre", 
+                "papi", 
+                "senpai"
+            ]
 
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]

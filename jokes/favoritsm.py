@@ -50,6 +50,15 @@ class FavoritismJoke(Joke):
 
     # Recognized nice emojis
     nice_emojis = [
+        "😇",
+        "☺️ ",
+        "😊",
+        "🙂",
+        "😍",
+        "🥰",
+        "😘",
+        "😗",
+        "😙",
         "😉",
         "😄",
         "😆",
@@ -57,59 +66,97 @@ class FavoritismJoke(Joke):
         "🤣",
         "😂",
         "😹",
-        "😉"
+        "😻",
+        "😽",
+        "❤️ ",
+        "🧡",
+        "💛",
+        "💚",
+        "💙",
+        "💜",
+        "🖤",
+        "🤎",
+        "🤍",
+        "❣️",
+        "💕",
+        "💞",
+        "💓",
+        "💗",
+        "💖",
+        "💘",
+        "💝",
+        "💟"
     ]
 
     # Recognized rude emojis
     rude_emojis = [
+        "😒",
         "😡",
         "🤬",
         "💀",
         "😴",
+        "😾",
         "☠️",
         "🖕",
+        "👊",
+        "🤛",
+        "🤜",
+        "✊",
         "🚫",
         "⛔",
-        "💩"
+        "💩",
+        "💔"
     ]
     
     # Phrases/words
     # Recognized nice phrases/words
     nice_phrases = [
         "amazing",
+        "best",
+        "fair",
         "fav",
-        "funny",
+        "fun",
         "good",
         "great",
         "like",
         "love",
+        "sorry",
         "thank",
         "ty",
+        "welcome",
         "wonderful"
     ]
 
     # Recognized rude phrases/words
     rude_phrases = [
+        "abus",
+        "ass",
+        "awful",
         "bad",
         "ban",
         "boo",
+        "detestable",
         "embarrass",
         "exterminate",
         "extinguish",
         "fail",
         "fuck",
+        "hate",
         "heck",
         "hell",
+        "horrible",
         "get out",
         "kick",
         "kill",
+        "loathe",
         "murder",
-        "not fun",
+        "petty",
         "piss",
         "remove",
         "screw",
         "stink",
         "suck",
+        "thief",
         "tosser"
     ]
 
