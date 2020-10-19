@@ -45,7 +45,7 @@ class RankJoke(Joke):
                 re.IGNORECASE)
 
 
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Make a rank joke, returning bool as to success.
 
         Parameters

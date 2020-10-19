@@ -57,18 +57,21 @@ class Joke(ABC):
                 ]
 
 
-    async def make_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """Make the joke.
+    async def make_verbal_joke(self, bot:Red, msg:discord.Message) -> bool:
+        """Make a joke based on a verbal message from a user.
+
         Parameters
         ----------
         bot: Red
             The RedBot executing this function.
         msg: discord.Message
             The context in which the joke is being made.
+
         Returns
         -------
         bool
             Rather the joke was made or not.
+
         Raises
         ------
         AttributeError
@@ -79,14 +82,16 @@ class Joke(ABC):
         chance = await self.get_guild_option(bot, msg.channel.guild, 
                 f"{self.name}_chance")
         if  random.uniform(0.0, 100.0) <= chance:
-            return await self._make_joke(bot, msg)
+            return await self._make_verbal_joke(bot, msg)
         else:
             return False
 
 
     @abstractmethod    
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """The method to be overridden to actually make the joke.
+    async def _make_verbal_joke(self, bot:Red, msg:discord.Message) -> bool:
+        """The method to be overridden to actually make the joke based on a 
+        verbal message from a user.
+
         Parameters
         ----------
         bot: Red
@@ -99,6 +104,56 @@ class Joke(ABC):
             Rather the joke was made or not.
         """
         return NotImplemented
+
+
+    async def make_reaction_joke(self, bot:Red, 
+            payload:discord.RawReactionActionEvent, 
+            msg:discord.Message) -> bool:
+        """Make a joke based on a reaction to a message from a user.
+
+        Parameters
+        ----------
+        bot: Red
+            The RedBot executing this function.
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        msg: discord.Message
+            The message that an emoji was added to.
+
+        Returns
+        -------
+        bool
+            Rather the joke was made or not.
+        """
+        chance = await self.get_guild_option(bot, msg.channel.guild, 
+                f"{self.name}_chance")
+        if  random.uniform(0.0, 100.0) <= chance:
+            return await self._make_reaction_joke(bot, payload, msg)
+        else:
+            return False
+
+
+    async def _make_reaction_joke(self, bot:Red, 
+            payload:discord.RawReactionActionEvent, 
+            msg:discord.Message) -> bool:
+        """The method to be overridden to actually make the joke based on a 
+        reaction to message by a user. Default behavior is for the joke to
+        "fail" indicated by False.
+
+        Parameters
+        ----------
+        bot: Red
+            The RedBot executing this function.
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        msg: discord.Message
+            The message that an emoji was added to.
+        Returns
+        -------
+        bool
+            Rather the joke was made or not.
+        """
+        return False
 
 
     def register_guild_settings(self, default_guild_settings: dict, 

@@ -75,7 +75,7 @@ class ThatsFairJoke(Joke):
             )
 
 
-    async def _make_joke(self, bot:Red, msg:discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot:Red, msg:discord.Message) -> bool:
         """Respond with "that's fair"
 
         Parameters

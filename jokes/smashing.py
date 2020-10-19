@@ -25,7 +25,7 @@ class SmashingJoke(Joke):
         self.smashing_re = re.compile(r"smash", re.IGNORECASE)
 
 
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Return success as to sending a smashing gif.
 
         Parameters

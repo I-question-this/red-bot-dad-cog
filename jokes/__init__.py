@@ -5,6 +5,7 @@ import sys
 from .joke import Joke
 from .becky import BeckyJoke
 from .chores import ChoreJoke
+from .favoritsm import FavoritismJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
 from .ok_boomer import OkBoomerJoke
@@ -16,6 +17,7 @@ from .thats_fair import ThatsFairJoke
 JOKES = {
     "BeckyJoke": BeckyJoke(),
     "ChoreJoke": ChoreJoke(),
+    "FavoritismJoke": FavoritismJoke(),
     "HerJoke": HerJoke(),
     "IAmDadJoke": IAmDadJoke(),
     "OkBoomerJoke": OkBoomerJoke(),

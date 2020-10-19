@@ -30,7 +30,7 @@ class BeckyJoke(Joke):
         self.becky_re = re.compile(becky_phrase_re, re.IGNORECASE)
 
 
-    async def _make_joke(self, bot: Red, msg: discord.Message) -> bool:
+    async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Return success as to sending a smashing gif.
 
         Parameters
