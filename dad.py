@@ -65,8 +65,10 @@ class Dad(commands.Cog):
             ("Walk the dog", "🐕"),
             ("Wash the car", "🚗"),
             ("Wear socks with sandals", "🧦"),
-            ("Watch the History Channel", "📺")
+            ("Watch the History Channel", "📺"),
+            ("Get milk","🥛")
         ]
+        
         # Dad Variants data
         self.dad_variants = [
                 "dad", 
@@ -380,6 +382,80 @@ class Dad(commands.Cog):
             await ChoreJoke.request_chore(self, ctx.channel, member)
 
 
+    async def get_option_strings(self, guild:discord.Guild) -> str:
+        """Get the chances for each joke.
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            The guild in which to get the chances of
+        """
+        guild_option_strings = []
+        for opt in self.guild_options_information.values():
+            if opt.type_convertor != OptionType.HIDDEN:
+                value = await Joke.get_guild_option(self, guild, opt.name)
+                guild_option_strings.append(f"{opt.name}: {value}")
+        guild_option_strings = '\n'.join(sorted(guild_option_strings))
+        return guild_option_strings
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def explain_points(self, ctx:commands.Context):
+        """Explain how children gain and lose points.
+        """
+        # Making Jokes
+        explaination = "----Making Jokes----\n"
+        explaination += "Dad will give points to those who allow him to make "
+        explaination += "a joke. Note that each joke only has a percent "
+        explaination += "chance of occurring. The current jokes and settings "
+        explaination += "are:\n" 
+        explaination += "`" + await self.get_option_strings(ctx.guild) + "`\n"
+
+        # Doing Chores
+        explaination += "\n----Doing Chores----\n"
+        explaination += "Dad will give points to those who do chores. He will "
+        explaination += "also take away points for those who are asked to a "
+        explaination += "do a chore, but don't. One can either wait for Dad "
+        explaination += "to randomly assign a chore, or one can request one "
+        explaination += " with the `request_chore_for @CHILD` command.\n"
+
+        # Reacting to messages
+        explaination += "\n----Reacting to Dad's Messages----\n"
+        explaination += "Dad will give points to those who react to his "
+        explaination += " messages with the following reactions:\n"
+        explaination += ", ".join(self.nice_emojis) + "\n"
+        explaination += "Dad will take points from those who react to his "
+        explaination += " messages with the following reactions:\n"
+        explaination += ", ".join(self.rude_emojis) + "\n"
+
+        # Making reference to Dad
+        explaination += "\n----Making Reference to Dad----\n"
+        explaination += "Dad has a simple understanding of when he's being "
+        explaination += "talked about. He knows this if a message contains "
+        explaination += f" {self.bot.user.mention}, "
+        explaination += " or any of the following words that mean \"Dad\":\n"
+        explaination += "`" + ", ".join(self.dad_variants) + "`\n"
+        explaination += "He'll also react to said message with 😉. If one "
+        explaination += "uses a nice word in the message he will reward "
+        explaination += "points, as he assumes you're saying nice things "
+        explaination += "about him. He recognizes the following as nice "
+        explaination += "words: \n"
+        explaination += "`" + ", ".join(self.nice_phrases) + "`\n"
+        explaination += "If a message contains rude words, and no nice words "
+        explaination += "then Dad assumes you're talking bad about him and "
+        explaination += "takes away points. The following are recognized rude "
+        explaination += "words:\n"
+        explaination += "`" + ", ".join(self.rude_phrases) + "`"
+
+        contents = dict(
+                title="How to Gain/Lose Favoritism Points",
+                description=explaination
+                )
+        embed = discord.Embed.from_dict(contents)
+        return await ctx.send(embed=embed)
+
+
     @commands.guild_only()
     @commands.admin()
     @commands.group()
@@ -409,15 +485,10 @@ class Dad(commands.Cog):
     @dad_settings.command()
     async def list_options(self, ctx:commands.Context):
         """List the values for all the options for jokes"""
-        guild_option_strings = []
-        for opt in self.guild_options_information.values():
-            if opt.type_convertor != OptionType.HIDDEN:
-                value = await Joke.get_guild_option(self, ctx.guild, opt.name)
-                guild_option_strings.append(f"{opt.name}: {value}")
-        guild_option_strings = '\n'.join(sorted(guild_option_strings))
         contents = dict(
                 title = "Response Chances",
-                description = f"**Guild**: \n {guild_option_strings}"
+                description = "**Guild**: \n"
+                    f"{await self.get_option_strings(ctx.guild)}"
                 )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
