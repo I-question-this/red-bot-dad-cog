@@ -6,6 +6,7 @@ random.seed()
 import re
 from redbot.core.bot import Red
 from .joke import Joke
+from .favoritsm import FavoritismJoke
 
 LOG = logging.getLogger("red.dad")
 
@@ -147,7 +148,7 @@ class ChoreJoke(Joke):
                 f"\"{member.display_name}\"({member.id}) "
                 "failed to complete the chore")
             await chore_msg.add_reaction("👎")
-            await bot.add_points_to_member(member, -10)
+            await FavoritismJoke.add_points_to_member(bot, member, -10)
         else:
             if member != completed_user:
                 LOG.info(f"Chore: "
@@ -155,14 +156,14 @@ class ChoreJoke(Joke):
                     " sniped chore from "
                     f"\"{member.display_name}\"({member.id})")
                 await chore_msg.add_reaction(reward)
-                await bot.add_points_to_member(completed_user, 5)
-                await bot.add_points_to_member(member, -10)
+                await FavoritismJoke.add_points_to_member(bot, completed_user, 5)
+                await FavoritismJoke.add_points_to_member(bot, member, -10)
             else:
                 LOG.info(f"Chore: "
                     f"\"{member.display_name}\"({member.id}) "
-                    "succeeded to complete the chore")
+                    "succeeded to complete/steal the chore")
                 await chore_msg.add_reaction(reward)
-                await bot.add_points_to_member(member, 5)
+                await FavoritismJoke.add_points_to_member(bot, member, 5)
 
         # This joke always succeeds
         return True
