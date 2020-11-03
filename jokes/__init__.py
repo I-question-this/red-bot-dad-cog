@@ -12,6 +12,7 @@ from .ok_boomer import OkBoomerJoke
 from .rank import RankJoke
 from .smashing import SmashingJoke
 from .thats_fair import ThatsFairJoke
+from .simply import SimplyJoke
 
 # Dictionary to save registered Joke objects
 JOKES = {
@@ -23,6 +24,7 @@ JOKES = {
     "OkBoomerJoke": OkBoomerJoke(),
     "RankJoke": RankJoke(),
     "SmashingJoke": SmashingJoke(),
-    "ThatsFairJoke": ThatsFairJoke()
+    "ThatsFairJoke": ThatsFairJoke(),
+    "SimplyJoke": SimplyJoke()
 }
 
