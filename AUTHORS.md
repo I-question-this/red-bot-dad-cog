@@ -1,1 +1,2 @@
 - Westland, Tyler <[i-question-this](https://github.com/i-question-this)>
+- King, Bayley <[king2b3](https://github.com/king2b3)>
