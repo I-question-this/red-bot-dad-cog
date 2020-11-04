@@ -11,6 +11,7 @@ IMAGES_DIR = os.path.join(os.path.dirname(FILE_DIR), "images")
 SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
 SMASHING_DIR = os.path.join(IMAGES_DIR, "smashing")
 SIMPLY_DIR = os.path.join(IMAGES_DIR, "simply")
+BONK_DIR = os.path.join(IMAGES_DIR, "bonk")
 
 
 def convert_to_boolean(boolean: str) -> bool:
