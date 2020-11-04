@@ -1,2 +1,2 @@
 # These are the main requirements, but they have several other dependencies
-Red-DiscordBot==3.4.0
+Red-DiscordBot==3.4.2
