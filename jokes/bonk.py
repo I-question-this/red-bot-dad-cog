@@ -1,7 +1,7 @@
 import discord
 import logging
 import re
-from profanity_check import predict
+#from profanity_check import predict
 from redbot.core.bot import Red
 
 from .joke import Joke
