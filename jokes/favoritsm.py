@@ -126,6 +126,7 @@ class FavoritismJoke(Joke):
         "welcome",
         "wonderful"
     ]
+    nice_phrases_re = re.compile("|".join(nice_phrases), re.IGNORECASE)
 
     # Recognized rude phrases/words
     rude_phrases = [
@@ -159,6 +160,7 @@ class FavoritismJoke(Joke):
         "thief",
         "tosser"
     ]
+    rude_phrases_re = re.compile("|".join(rude_phrases), re.IGNORECASE)
 
 
     def __init__(self):
@@ -225,7 +227,7 @@ class FavoritismJoke(Joke):
         # Is Dad mentioned in this message?
         if bot.is_dad_mentioned(msg):
             # Is the message rude?
-            if self.is_message_rude(msg):
+            if self.is_message_rude(msg.content):
                 # Check the chance of punishment
                 if  random.uniform(0.0, 100.0) <= \
                         await self.get_guild_option(
@@ -237,7 +239,7 @@ class FavoritismJoke(Joke):
                     return await self.punish_user(
                             bot, msg.author, msg.channel)
             # Is the message nice?
-            elif self.is_message_nice(msg):
+            elif self.is_message_nice(msg.content):
                 # Check the chance of praise
                 if  random.uniform(0.0, 100.0) <= \
                         await self.get_guild_option(
@@ -455,43 +457,35 @@ class FavoritismJoke(Joke):
 
 
     @classmethod
-    def is_message_nice(cls, msg:discord.Message) -> bool:
+    def is_message_nice(cls, message_content:str) -> bool:
         """Return rather the message is nice to Dad
         Parameters
         ----------
-        msg: discord.Message
+        message_content: str
             The message to investigate.
         Returns
         -------
         bool
             Rather the message is nice to Dad or not
         """
-        # Is the word "dad" in the message?
-        for nice_phrase in cls.nice_phrases:
-            if nice_phrase in msg.content.lower():
-                return True
-        # No rudeness
-        return False
+        match = cls.nice_phrases_re.search(message_content)
+        return match is not None
 
 
     @classmethod
-    def is_message_rude(cls, msg:discord.Message) -> bool:
+    def is_message_rude(cls, message_content:str) -> bool:
         """Return rather the message is rude to Dad
         Parameters
         ----------
-        msg: discord.Message
+        message_content: str
             The message to investigate.
         Returns
         -------
         bool
             Rather the message is rude to Dad or not
         """
-        # Is the word "dad" in the message?
-        for rude_phrase in cls.rude_phrases:
-            if rude_phrase in msg.content.lower():
-                return True
-        # No rudeness
-        return False
+        match = cls.rude_phrases_re.search(message_content)
+        return match is not None
 
 
     @classmethod
