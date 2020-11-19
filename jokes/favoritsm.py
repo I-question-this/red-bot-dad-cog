@@ -474,6 +474,7 @@ class FavoritismJoke(Joke):
         return False
 
 
+    @classmethod
     def is_message_rude(cls, msg:discord.Message) -> bool:
         """Return rather the message is rude to Dad
         Parameters
@@ -556,7 +557,7 @@ class FavoritismJoke(Joke):
             return True
         else:
             # Send them a nice emoji
-            await msg.add_reaction(random.choice(self.nice_emojis))
+            await msg.add_reaction(random.choice(cls.nice_emojis))
             # Since it was NOT a verbal message return False to indicate that
             return False
 
