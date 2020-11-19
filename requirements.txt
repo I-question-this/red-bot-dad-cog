@@ -1,3 +1,2 @@
 # These are the main requirements, but they have several other dependencies
 Red-DiscordBot==3.4.2
-profanity-check==1.0.3
