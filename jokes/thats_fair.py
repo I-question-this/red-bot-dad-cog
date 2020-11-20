@@ -49,7 +49,7 @@ class ThatsFairJoke(Joke):
         self.guild_options.append(
                 Option(
                     self._starting_response_number_option_name, 
-                    5, OptionType.NONZERO_POSITIVE_INTEGER
+                    1, OptionType.NONZERO_POSITIVE_INTEGER
                 ),
             )
 
