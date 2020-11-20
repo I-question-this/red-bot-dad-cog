@@ -16,6 +16,7 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 ![image](thats_fair_origin.png)
 + Dad will warmly greet new members to the server if they are real people, and coldly greet new members if they are a bot
   + Note, that he will send the greeting to the "system channel" of the server and will thus require permissions to send a message in said channel for this function to work.
++ Dad understands that we all want senpai to notice us and shares in our pain.
 
 ## Adding a New Joke
 + New jokes can usually be added as a new sub-class of the Joke class in the jokes directory.
