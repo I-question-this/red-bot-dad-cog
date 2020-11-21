@@ -9,25 +9,20 @@ from .util import random_image, BONK_DIR
 
 LOG = logging.getLogger("red.dad")
 
-class BonkJoke(Joke):
+class NaughtyJoke(Joke):
     def __init__(self):
-        """Init for the bonk joke.
+        """Init for the naughty joke.
 
-        Mentioning of bonking gets the bonk.
-
+        If someone gets a little NSFW, Dad will hastily correct them
+        and send them to horny jail with a swift bonk.
         """
         
         # Set up super class
-        super().__init__("bonk", 100.0)
-        # Set up this class
-        bonk_phrases = [
-            "bonk",
-        ]
-        self.bonk_re = re.compile("|".join(bonk_phrases), re.IGNORECASE)
+        super().__init__("naughty", 5.0)
 
 
     async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """Return success as to rather bonk was mentioned.
+        """Return success to rather something naughty was said.
 
         Parameters
         ----------
@@ -41,15 +36,14 @@ class BonkJoke(Joke):
         bool
             Success of joke.
         """
-        match = self.bonk_re.search(msg.content)
-        if match is None:
-            # No mention of bonk
+        if not FavoritismJoke.is_message_rude(msg.content):
+            # Nothing wrong was said 
             return False
         else:
             # Log joke
-            LOG.info(f"bonk: {msg.content}")
+            LOG.info(f"Naughty: {msg.content}")
             # Construct our response
-            response = {"title":"BONK!"}
+            response = {"title":"Children shouldn't swear"}
             # Pick random gif
             bonk_gif = random_image(BONK_DIR)
             # Construct embed

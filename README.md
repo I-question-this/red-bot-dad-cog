@@ -10,6 +10,7 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + Becky, please lemma smash -> A link to [Becky let me sMash](https://www.youtube.com/watch?v=qSJ5I5v8zwQ)
 + Okay boomer -> ok zoomer spelled out in emojis as a reaction to this message
 + Be careful not to say anything NSFW around Dad, he might get angry.....
++ Mentioning of bonk will give Dad ideas.
 + Dad will request his children complete chores via reacting with the correct emojis.
 + Dad will pick favorite and least favorite based on user behavior to his messages and chores. He'll show this to everyone by giving stars to his favorite, and rude emojis to his least favorite.
 + Dad will randomly make someone "the fair child", in which he will respond a set number of times to their messages with "that's fair". Inspired by 

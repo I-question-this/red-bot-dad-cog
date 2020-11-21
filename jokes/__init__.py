@@ -9,6 +9,7 @@ from .chores import ChoreJoke
 from .favoritsm import FavoritismJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
+from .naughty import NaughtyJoke
 from .ok_boomer import OkBoomerJoke
 from .rank import RankJoke
 from .senpai import SenpaiJoke
@@ -25,6 +26,7 @@ JOKES = {
     "FavoritismJoke": FavoritismJoke(),
     "HerJoke": HerJoke(),
     "IAmDadJoke": IAmDadJoke(),
+    "NaughtyJoke": NaughtyJoke(),
     "OkBoomerJoke": OkBoomerJoke(),
     "RankJoke": RankJoke(),
     "SenpaiJoke": SenpaiJoke(),
