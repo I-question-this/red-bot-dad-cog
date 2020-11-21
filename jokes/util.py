@@ -8,13 +8,14 @@ random.seed()
 # Determine image folder locations
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(os.path.dirname(FILE_DIR), "images")
+BONK_DIR = os.path.join(IMAGES_DIR, "bonk")
+NAUGHTY_DIR = os.path.join(IMAGES_DIR, "naughty")
 SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
 SENPAI_DIR = os.path.join(IMAGES_DIR, "senpai")
 SMASHING_DIR = os.path.join(IMAGES_DIR, "smashing")
 SIMPLY_DIR = os.path.join(IMAGES_DIR, "simply")
 SPONGEBOB_CHICKEN_DIR = os.path.join(IMAGES_DIR, "spongebob_chicken")
 STICKBUG_DIR = os.path.join(IMAGES_DIR, "stickbug")
-BONK_DIR = os.path.join(IMAGES_DIR, "bonk")
 
 
 def convert_to_boolean(boolean: str) -> bool:
@@ -96,12 +97,12 @@ def convert_to_non_zero_positive_int(nz_p_int: int) -> float:
         raise ValueError(f"Must be an integer above 0")
 
 
-def random_image(directory: str) -> discord.File:
+def random_image(directories) -> discord.File:
     """Returns a random image from directory in the form of a discord.File
 
     Parameters
     ----------
-    directory: str
+    directories: str or Iterable
         Directory to get a random image from
 
     Returns
@@ -109,6 +110,13 @@ def random_image(directory: str) -> discord.File:
     discord.File
         The path to the randomly selected image.
     """
+    # Choose a random directory
+    if type(directories) is str:
+        directory = directories
+    else:
+        directory = random.choice(directories)
+
+    # Choose a random gif from the random directory
     gif_path = os.path.join(directory,
             random.choice(os.listdir(directory)))
     return discord.File(gif_path, filename="joke.gif")
