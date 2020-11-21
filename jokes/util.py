@@ -12,6 +12,7 @@ SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
 SENPAI_DIR = os.path.join(IMAGES_DIR, "senpai")
 SMASHING_DIR = os.path.join(IMAGES_DIR, "smashing")
 SIMPLY_DIR = os.path.join(IMAGES_DIR, "simply")
+SPONGEBOB_CHICKEN_DIR = os.path.join(IMAGES_DIR, "spongebob_chicken")
 STICKBUG_DIR = os.path.join(IMAGES_DIR, "stickbug")
 BONK_DIR = os.path.join(IMAGES_DIR, "bonk")
 

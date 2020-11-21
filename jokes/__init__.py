@@ -15,6 +15,7 @@ from .rank import RankJoke
 from .senpai import SenpaiJoke
 from .simply import SimplyJoke
 from .smashing import SmashingJoke
+from .spongebob_chicken import SpongeBobChickenJoke
 from .stickbug import StickbugJoke
 from .thats_fair import ThatsFairJoke
 
@@ -33,6 +34,7 @@ JOKES = {
     "SenpaiJoke": SenpaiJoke(),
     "SimplyJoke": SimplyJoke(),
     "SmashingJoke": SmashingJoke(),
+    "SpongeBobChickenJoke": SpongeBobChickenJoke(),
     "StickbugJoke": StickbugJoke(),
     "ThatsFairJoke": ThatsFairJoke()
 }
