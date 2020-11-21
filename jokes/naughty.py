@@ -9,20 +9,20 @@ from .util import random_image, BONK_DIR
 
 LOG = logging.getLogger("red.dad")
 
-class BonkJoke(Joke):
+class NaughtyJoke(Joke):
     def __init__(self):
-        """Init for the bonk joke.
+        """Init for the naughty joke.
 
         If someone gets a little NSFW, Dad will hastily correct them
         and send them to horny jail with a swift bonk.
         """
         
         # Set up super class
-        super().__init__("bonk", 5.0)
+        super().__init__("naughty", 5.0)
 
 
     async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
-        """Return success as to sending the bonk picture.
+        """Return success to rather something naughty was said.
 
         Parameters
         ----------
