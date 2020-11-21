@@ -5,7 +5,7 @@ from redbot.core.bot import Red
 
 from .joke import Joke
 from .favoritsm import FavoritismJoke
-from .util import random_image, BONK_DIR
+from .util import random_image, BONK_DIR, NAUGHTY_DIR
 
 LOG = logging.getLogger("red.dad")
 
@@ -45,7 +45,7 @@ class NaughtyJoke(Joke):
             # Construct our response
             response = {"title":"Children shouldn't swear"}
             # Pick random gif
-            bonk_gif = random_image(BONK_DIR)
+            bonk_gif = random_image((BONK_DIR, NAUGHTY_DIR))
             # Construct embed
             embed = discord.Embed.from_dict(response)
             embed.set_image(url=f"attachment://{bonk_gif.filename}")
