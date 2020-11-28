@@ -35,6 +35,9 @@ class SpongebobChickenJoke(Joke):
         bool
             SuCcEsS oF jOkE.
         """
+        # ChEcK tHeRe Is AcTuAlLy TeXt In ThE mEsSaGe
+        if len(msg.content) == 0:
+            return False
         # LoG jOkE
         LOG.info(f"SpOnGeBoB cHiCkEn: MoCkInG cOmMeNcE")
         # ConStRuCt oUr ReSpOnSe
