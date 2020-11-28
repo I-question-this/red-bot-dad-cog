@@ -8,7 +8,7 @@ from .util import random_image, SPONGEBOB_CHICKEN_DIR
 
 LOG = logging.getLogger("red.dad")
 
-class SpongeBobChickenJoke(Joke):
+class SpongebobChickenJoke(Joke):
     def __init__(self):
         """InIt FoR tHe SpOnGeBoB cHicKeN jOkE.
 
