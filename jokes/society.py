@@ -49,6 +49,17 @@ class SocietyJoke(Joke):
         else:
             # Log joke
             LOG.info(f"Society: {match}")
+
+            # First tag that message with a society emoji (or clown if 
+            # that emojis doesn't exist in the guild)
+            society_emoji = discord.utils.get(msg.channel.guild.emojis, 
+                    name="society")
+            if society_emoji:
+                await msg.add_reaction(society_emoji)
+            else:
+                await msg.add_reaction("🤡")
+
+            # Second send an appropriate gif
             # Construct our response
             response = {}
             # Pick random gif
