@@ -67,7 +67,7 @@ class SocietyJoke(Joke):
             # Construct embed
             embed = discord.Embed.from_dict(response)
             embed.set_image(url=f"attachment://{society_gif.filename}")
-            # Send embed and smashing gif
+            # Send embed a society gif
             await msg.channel.send(embed=embed, file=society_gif)
             # Return success
             return True
