@@ -6,15 +6,12 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import Option, OptionType
 
-LOG = logging.getLogger("red.dad")
 
 class ThatsFairJoke(Joke):
     # Class variables
     name="thats_fair"
     _fair_child_id_option_name =\
             f"the_fair_child_id"
-    _fair_child_mention_string_option_name =\
-            f"the_fair_child_mention_string"
     _fair_child_responses_left_option_name =\
             f"the_fair_child_responses_left"
     _starting_response_number_option_name =\
@@ -56,13 +53,6 @@ class ThatsFairJoke(Joke):
         self.guild_options.append(
                 Option(
                     self._fair_child_id_option_name, 
-                    None, OptionType.HIDDEN
-                ),
-            )
-
-        self.guild_options.append(
-                Option(
-                    self._fair_child_mention_string_option_name, 
                     None, OptionType.HIDDEN
                 ),
             )
@@ -139,21 +129,15 @@ class ThatsFairJoke(Joke):
         await cls.set_guild_option_value(bot, guild, 
                 cls._fair_child_id_option_name, 
                 f"{member.id}")
-        # Set the member mention string
-        await cls.set_guild_option_value(bot, guild, 
-                cls._fair_child_mention_string_option_name,
-                f"{member.mention}")
         # Set the number of responses left
         starting_responses = await cls.get_guild_option(bot, guild, 
                     cls._starting_response_number_option_name)
         await cls.set_guild_option_value(bot, guild, 
                 cls._fair_child_responses_left_option_name, 
                 starting_responses)
-        LOG.info("That's Fair: "\
-                f"\"{member.guild.name}\"({member.guild.id})->"\
-                f"\"{member.display_name}\"({member.id}) "\
-                f" became \"the fair child\" with {starting_responses} "\
-                "response left.")
+        cls.log_info(guild, member, 
+                f"Is now the fair child: {starting_responses} "\
+                "response left")
 
 
     @classmethod
@@ -169,18 +153,14 @@ class ThatsFairJoke(Joke):
             The channel in which "the fair child" sent a message.
             The information as to who they are can be derived.
         """
-        # Get member mention string
-        member_mention_string = await cls.get_guild_option(bot, 
-                channel.guild, 
-                cls._fair_child_mention_string_option_name)
+        # Get the member id number
+        member_id = int(await cls.get_guild_option(bot, channel.guild, 
+                    cls._fair_child_id_option_name))
+        # Get member
+        member = channel.guild.get_member(member_id)
 
         # Send "that's fair"
-        await channel.send(f"{member_mention_string} that's fair")
-
-
-        # Get the member id number for logging purposes
-        member_id = await cls.get_guild_option(bot, channel.guild, 
-                    cls._fair_child_id_option_name)
+        await channel.send(f"{member.mention} that's fair")
 
         # Get current number of responses left
         responses_left = await cls.get_guild_option(bot, channel.guild, 
@@ -194,25 +174,17 @@ class ThatsFairJoke(Joke):
             await cls.set_guild_option_value(bot, channel.guild, 
                     cls._fair_child_id_option_name,
                     None)
-            # Reset the member mention string
-            await cls.set_guild_option_value(bot, channel.guild, 
-                    cls._fair_child_mention_string_option_name, 
-                    None)
             # Reset the number of responses left
             await cls.set_guild_option_value(bot, channel.guild, 
                     cls._fair_child_responses_left_option_name, 
                     None)
-            LOG.info("That's Fair: "\
-                    f"\"{channel.guild.name}\"({channel.guild.id})->"\
-                    f"\"\"({member_id}) "\
-                    "is no longer \"the fair child\"")
+            cls.log_info(channel.guild, member, 
+                    f"No longer the fair child")
         else:
             # They have one less, but they are still "the fair child"
             await cls.set_guild_option_value(bot, channel.guild, 
                     cls._fair_child_responses_left_option_name, 
                     responses_left)
-            LOG.info("That's Fair: "\
-                    f"\"{channel.guild.name}\"({channel.guild.id})->"\
-                    f"\"\"({member_id}) "\
-                    f"has {responses_left} responses left")
+            cls.log_info(channel.guild, member, 
+                    f"{responses_left} response left.")
 

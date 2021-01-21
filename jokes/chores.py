@@ -8,8 +8,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .favoritsm import FavoritismJoke
 
-LOG = logging.getLogger("red.dad")
-
 class ChoreJoke(Joke):
     request_help_method = [
             ("before dinner, please", "👍"),
@@ -138,30 +136,24 @@ class ChoreJoke(Joke):
             # User gets an amount of time to guess, any non-matching emojis
             # Result in nothing occurring.
             # Log joke
-            LOG.info(f"Chore: Requested joke for "
-                f"\"{member.display_name}\"({member.id})")
+            cls.log_info(channel.guild, member, "Chore requested")
             reaction, completed_user = await bot.bot.wait_for(
                     "reaction_add", timeout=600.0,
                     check=check)
         except asyncio.TimeoutError:
-            LOG.info(f"Chore: "
-                f"\"{member.display_name}\"({member.id}) "
-                "failed to complete the chore")
+            cls.log_info(channel.guild, member, "Chore requested")
             await chore_msg.add_reaction("👎")
             await FavoritismJoke.add_points_to_member(bot, member, -10)
         else:
             if member != completed_user:
-                LOG.info(f"Chore: "
-                    f"\"{completed_user.display_name}\"({completed_user.id}) "
-                    " sniped chore from "
-                    f"\"{member.display_name}\"({member.id})")
+                cls.log_info(channel.guild, member, 
+                        f"Chore sniped by {completed_user.display_name}")
                 await chore_msg.add_reaction(reward)
-                await FavoritismJoke.add_points_to_member(bot, completed_user, 5)
+                await FavoritismJoke.add_points_to_member(bot,
+                        completed_user, 5)
                 await FavoritismJoke.add_points_to_member(bot, member, -10)
             else:
-                LOG.info(f"Chore: "
-                    f"\"{member.display_name}\"({member.id}) "
-                    "succeeded to complete/steal the chore")
+                cls.log_info(channel.guild, member, "Chore completed")
                 await chore_msg.add_reaction(reward)
                 await FavoritismJoke.add_points_to_member(bot, member, 5)
 
