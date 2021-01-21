@@ -6,7 +6,7 @@ random.seed()
 import re
 from redbot.core.bot import Red
 from .joke import Joke
-from .favoritsm import FavoritismJoke
+from .favoritism import FavoritismJoke
 
 class ChoreJoke(Joke):
     request_help_method = [

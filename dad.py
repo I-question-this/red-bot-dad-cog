@@ -10,7 +10,7 @@ from redbot.core.bot import Red
 from typing import List
 
 from .jokes.chores import ChoreJoke
-from .jokes.favoritsm import FavoritismJoke
+from .jokes.favoritism import FavoritismJoke
 from .jokes.joke import Joke, NoSuchOption
 from .jokes.thats_fair import ThatsFairJoke
 from .jokes.util import OptionType

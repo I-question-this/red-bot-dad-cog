@@ -4,7 +4,7 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .favoritsm import FavoritismJoke
+from .favoritism import FavoritismJoke
 from .util import random_image, BONK_DIR
 
 class BonkJoke(Joke):
