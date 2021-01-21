@@ -250,7 +250,7 @@ class FavoritismJoke(Joke):
                     return await self.thank_message_author(bot, msg)
 
         # Report success
-        return True
+        return False
 
 
     async def _make_reaction_joke(self, bot:Red, payload, 
