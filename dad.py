@@ -424,10 +424,10 @@ class Dad(commands.Cog):
         explaination += "\n----Reacting to Dad's Messages----\n"
         explaination += "Dad will give points to those who react to his "
         explaination += " messages with the following reactions:\n"
-        explaination += ", ".join(self.nice_emojis) + "\n"
+        explaination += ", ".join(FavoritismJoke.nice_emojis) + "\n"
         explaination += "Dad will take points from those who react to his "
         explaination += " messages with the following reactions:\n"
-        explaination += ", ".join(self.rude_emojis) + "\n"
+        explaination += ", ".join(FavoritismJoke.rude_emojis) + "\n"
 
         # Making reference to Dad
         explaination += "\n----Making Reference to Dad----\n"
@@ -441,19 +441,21 @@ class Dad(commands.Cog):
         explaination += "points, as he assumes you're saying nice things "
         explaination += "about him. He recognizes the following as nice "
         explaination += "words: \n"
-        explaination += "`" + ", ".join(self.nice_phrases) + "`\n"
+        explaination += "`" + ", ".join(FavoritismJoke.nice_phrases) + "`\n"
         explaination += "If a message contains rude words, and no nice words "
         explaination += "then Dad assumes you're talking bad about him and "
         explaination += "takes away points. The following are recognized rude "
         explaination += "words:\n"
-        explaination += "`" + ", ".join(self.rude_phrases) + "`"
+        explaination += "`" + ", ".join(FavoritismJoke.rude_phrases) + "`"
 
-        contents = dict(
-                title="How to Gain/Lose Favoritism Points",
-                description=explaination
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
+        for chunk in [explaination[i:i+2048] for i in 
+                range(0, len(explaination), 2048)]:
+            contents = dict(
+                    title="How to Gain/Lose Favoritism Points",
+                    description=chunk
+                    )
+            embed = discord.Embed.from_dict(contents)
+            await ctx.send(embed=embed)
 
 
     @commands.guild_only()
