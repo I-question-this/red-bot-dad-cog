@@ -16,12 +16,13 @@ class ByeahJoke(Joke):
 
         """
         # Set up super class
-        super().__init__("smashing", 100.0)
+        super().__init__("byeah", 100.0)
         # Set up this class
         byeah_items = [
                 "byeah",
                 "cheeseburger",
                 "hot dog",
+                "hotdog",
                 "bug collect", # bug collection
                 "bar fighting",
                 "doughnut"
