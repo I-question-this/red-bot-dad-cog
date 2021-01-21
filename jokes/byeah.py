@@ -22,6 +22,7 @@ class ByeahJoke(Joke):
                 "byeah",
                 "cheeseburger",
                 "hot dog",
+                "hotdog",
                 "bug collect", # bug collection
                 "bar fighting",
                 "doughnut"
