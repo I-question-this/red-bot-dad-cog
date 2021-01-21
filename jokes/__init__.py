@@ -6,7 +6,7 @@ from .joke import Joke
 from .becky import BeckyJoke
 from .bonk import BonkJoke
 from .chores import ChoreJoke
-from .favoritsm import FavoritismJoke
+from .favoritism import FavoritismJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
 from .naughty import NaughtyJoke
