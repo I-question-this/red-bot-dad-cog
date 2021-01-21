@@ -6,7 +6,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SOCIETY_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class SocietyJoke(Joke):
     def __init__(self):
@@ -48,7 +47,7 @@ class SocietyJoke(Joke):
             return False
         else:
             # Log joke
-            LOG.info(f"Society: {match}")
+            self.log_info(msg.guild, msg.author, match)
 
             # First tag that message with a society emoji (or clown if 
             # that emojis doesn't exist in the guild)

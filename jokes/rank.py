@@ -8,7 +8,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SALUTES_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class RankJoke(Joke):
     def __init__(self):
@@ -70,8 +69,7 @@ class RankJoke(Joke):
             response["title"] = f"{match.group('rank').capitalize()} "\
                     f"{match.group('title').capitalize()}"
             # Log joke
-            LOG.info(f"Rank: \"{match.group('rank')} "\
-                    f"{match.group('title')}\"")
+            self.log_info(msg.guild, msg.author, match)
             # Pick random salute gif
             salute_gif = random_image(SALUTES_DIR)
             # Construct embed

@@ -6,8 +6,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SMASHING_DIR
 
-LOG = logging.getLogger("red.dad")
-
 class BeckyJoke(Joke):
     def __init__(self):
         """Init for the Becky Lemme Smash joke.
@@ -51,7 +49,7 @@ class BeckyJoke(Joke):
             return False
         else:
             # Log joke
-            LOG.info(f"Becky: {match}")
+            self.log_info(msg.guild, msg.author, match)
             # Construct our response
             await msg.channel.send("https://www.youtube.com/watch?v=qSJ5I5v8zwQ")
             # Return success

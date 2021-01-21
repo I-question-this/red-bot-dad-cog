@@ -6,7 +6,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, STICKBUG_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class StickbugJoke(Joke):
     def __init__(self):
@@ -47,7 +46,7 @@ class StickbugJoke(Joke):
             return False
         else:
             # Log joke
-            LOG.info(f"Stickbug: {match}")
+            self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {}
             # Pick random gif

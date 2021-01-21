@@ -511,7 +511,7 @@ class Dad(commands.Cog):
             description = f"Set {name} to {new_value}"
             # Log points change
             LOG.info(f"Response Chance Change: "\
-                    f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                    f"In \"{ctx.guild.name}\" -> "\
                     f"{description}")
             if "chance" in name:
                 description += "%"
@@ -545,9 +545,9 @@ class Dad(commands.Cog):
         
         # Log points reset for member
         LOG.info(f"Points Reset: "\
-                f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                f"In \"{ctx.guild.name}\" -> "\
                 f"Points have been reset for "\
-                f"\"{member.display_name}\"({member.id})")
+                f"\"{member.display_name}\"")
 
         # Inform the user that they have reset the points appropriately
         contents = dict(
@@ -570,7 +570,7 @@ class Dad(commands.Cog):
         await FavoritismJoke.calculate_favoritism_in_guild(ctx.guild)
         # Log points reset for all members
         LOG.info(f"Points Reset: "\
-                f"\"{ctx.guild.name}\"({ctx.guild.id}): "\
+                f"\"{ctx.guild.name}\" -> "\
                 f"Points have been reset for "\
                 f"all members")
 

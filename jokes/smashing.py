@@ -6,7 +6,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SMASHING_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class SmashingJoke(Joke):
     def __init__(self):
@@ -46,7 +45,7 @@ class SmashingJoke(Joke):
             return False
         else:
             # Log joke
-            LOG.info(f"Smashing: {match}")
+            self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {}
             # Pick random gif

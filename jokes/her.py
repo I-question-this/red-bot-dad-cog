@@ -5,7 +5,6 @@ from redbot.core.bot import Red
 
 from .joke import Joke
 
-LOG = logging.getLogger("red.dad")
 
 class HerJoke(Joke):
     def __init__(self):
@@ -55,7 +54,8 @@ class HerJoke(Joke):
                 # Replace part of middle with ellipse
                 _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
             # Log joke
-            LOG.info(f"Her: \"{her_match.groups('her')[1]}\"")
+            self.log_info(msg.guild, msg.author, 
+                    f"{her_match.groups('her')[1]}")
             # Construct our response
             response = f"{_her.title()}*her*, I barely know her!"
             # Send message
