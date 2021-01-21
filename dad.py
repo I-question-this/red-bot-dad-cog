@@ -541,7 +541,7 @@ class Dad(commands.Cog):
         await self._conf.member(member).points.set(0)
         
         # Recalculate favorite child for the associated guild
-        await FavoritismJoke.calculate_favoritism_in_guild(ctx.guild)
+        await FavoritismJoke.calculate_favoritism_in_guild(self, ctx.guild)
         
         # Log points reset for member
         LOG.info(f"Points Reset: "\
@@ -567,7 +567,7 @@ class Dad(commands.Cog):
                 await self._conf.member(member).points.set(0)
 
         # Recalculate favorite child for the associated guild
-        await FavoritismJoke.calculate_favoritism_in_guild(ctx.guild)
+        await FavoritismJoke.calculate_favoritism_in_guild(self, ctx.guild)
         # Log points reset for all members
         LOG.info(f"Points Reset: "\
                 f"\"{ctx.guild.name}\" -> "\
