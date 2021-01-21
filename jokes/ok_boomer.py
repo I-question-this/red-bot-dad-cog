@@ -30,7 +30,7 @@ class OkBoomerJoke(Joke):
         # Set up super class
         super().__init__("ok_boomer", 100)
         # Set up this class
-        self.zoomer_re = re.compile(r"(o)?k(ay)? zoomer", re.IGNORECASE)
+        self.zoomer_re = re.compile(r"zoomer", re.IGNORECASE)
         self.ok_zoomer = [
                 "🆗",
                 "🇿",
@@ -40,7 +40,7 @@ class OkBoomerJoke(Joke):
                 "🇪",
                 "🇷"
             ]
-        self.boomer_re = re.compile(r"(o)?k(ay)? boomer", re.IGNORECASE)
+        self.boomer_re = re.compile(r"boomer", re.IGNORECASE)
         self.ok_boomer = [
                 "🆗",
                 "🇧",
