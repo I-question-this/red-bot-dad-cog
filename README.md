@@ -20,6 +20,8 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + Dad understands that we all want senpai to notice us and shares in our pain.
 + Dad will stickbug you if you're not careful.
 + DaD wIlL sOmEtImEs MoCk SoMeOnEs MeSsAgE.
++ The [last meeting](https://www.youtube.com/watch?v=ZDm6j92DshA) of the byeahs informed us of all the things we agree on.
+        
 
 ## Adding a New Joke
 + New jokes can usually be added as a new sub-class of the Joke class in the jokes directory.
