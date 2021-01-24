@@ -100,6 +100,28 @@ class CowSayJoke(Joke):
         bubble += "\\" + "-"*bubble_width + "/"
         return bubble
 
+    @classmethod
+    def construct_cowsay(cls, name:str, message:str) -> str:
+        """Return a random constructed cowsay
+
+        Parameters
+        ----------
+        name: str
+            The name of the character to construct.
+        message: str
+            The message to cowsayify
+
+        Returns
+        -------
+        str
+            The cowsayed message.
+        """
+        construct = "```" +\
+                cls.speech_bubble(message, 50) +\
+                cls.CHARACTERS[name] +\
+                "```"
+        return construct
+
 
     async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
         """Return byeah or bno
@@ -116,16 +138,13 @@ class CowSayJoke(Joke):
         bool
             Success of joke.
         """
-        # Choose character
-        name, character = random.choice(list(self.CHARACTERS.items()))
+        # Get the constructed cowsay and name
+        name = random.choice(list(self.CHARACTERS.keys()))
+        cowsay = self.construct_cowsay(name, msg.content)
         # Log joke
         self.log_info(msg.guild, msg.author, name)
         # Send message
-        await msg.channel.send(
-                "```" + 
-                self.speech_bubble(msg.content, 50) +
-                character +
-                "```")
+        await msg.channel.send(cowsay)
         # Return success
         return True
 
