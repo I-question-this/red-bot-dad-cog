@@ -42,10 +42,62 @@ class CowSayJoke(Joke):
 
 
     @staticmethod
-    def speech_bubble(message):
-        bubble = "/" + "-"*len(message) + "\\\n"
-        bubble += f"|{message}|\n"
-        bubble += "\\" + "-"*len(message) + "/"
+    def slice_message(message:str, width:int) -> list:
+        """Slice a message into strings of max width
+
+        Parameters
+        ----------
+        message: str
+            The message to split.
+        width: int
+            The max width for messages.
+
+        Returns
+        -------
+        list
+            The message split into a list
+        """
+        lines = []
+        for word in message.split():
+            if len(lines) == 0:
+                lines.append(word)
+            # Add one for the inserted space.
+            elif len(lines[-1]) + len(word) + 1 <= width:
+                lines[-1] = " ".join((lines[-1], word))
+            else:
+                lines.append(word)
+        return lines
+
+
+    @staticmethod
+    def speech_bubble(message:str, width:int) -> str:
+        """Turn a message into a speech bubble.
+
+        Parameters
+        ----------
+        message: str
+            The message to put into a speech bubble.
+        width: int
+            The max width for speech bubble.
+
+        Returns
+        -------
+        str
+            The speech bubble containing the message.
+        """
+        # Adjust width if necessary
+        if len(message) < width - 2:
+            mess_width = len(message) 
+            bubble_width = mess_width + 2
+        else:
+            mess_width = width - 2
+            bubble_width = width
+        # Create the speech bubble.
+        bubble = "/" + "-"*bubble_width + "\\\n"
+        # Subtract 2 for the surrounding '|' characters.
+        for line in CowSayJoke.slice_message(message, mess_width):
+            bubble += f"|{line.ljust(bubble_width)}|\n"
+        bubble += "\\" + "-"*bubble_width + "/"
         return bubble
 
 
@@ -71,7 +123,7 @@ class CowSayJoke(Joke):
         # Send message
         await msg.channel.send(
                 "```" + 
-                self.speech_bubble(msg.content) +
+                self.speech_bubble(msg.content, 50) +
                 character +
                 "```")
         # Return success
