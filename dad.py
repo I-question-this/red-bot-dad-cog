@@ -311,7 +311,8 @@ class Dad(commands.Cog):
 
     # Commands
     @commands.command()
-    async def cowsay(self, ctx:commands.Context, message:str, character:str="cow"):
+    async def cowsay(self, ctx:commands.Context, message:str, 
+            character:str="default"):
         """Cowsay a message
         Parameters
         ----------
@@ -320,10 +321,9 @@ class Dad(commands.Cog):
         character: str
             The character to put the message into. Default is cow
         """
-        character = character.lower()
-        if character in CowSayJoke.CHARACTERS.keys():
-            await ctx.channel.send(CowSayJoke.construct_cowsay(character, 
-                message))
+        if character in CowSayJoke.cowsay_characters():
+            await ctx.channel.send(
+                    CowSayJoke.construct_cowsay(character, message))
         else:
             await ctx.channel.send(f"'{character}' is not a valid cowsay "\
                     "character")
@@ -334,7 +334,8 @@ class Dad(commands.Cog):
         """Available characters for cowsay"""
         contents = dict(
                 title = "Available Characters",
-                description = "\n".join(sorted(CowSayJoke.CHARACTERS.keys()))
+                description = "\n".join(sorted(
+                    CowSayJoke.cowsay_characters()))
                 )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 

@@ -3,32 +3,12 @@ import logging
 import random
 import re
 from redbot.core.bot import Red
+import subprocess
 
 from .joke import Joke
 
 
 class CowSayJoke(Joke):
-    CHARACTERS = {
-            "cow":
-    r"""
-    \   ^__^
-     \  (oo)\_______
-        (__)\       )\/\
-            ||----w |
-            ||     ||
-    """,
-            "tux":
-    r"""
-    \   .--.
-     \ |o_o |
-       |:_/ |
-      //   \ \
-     (|     | )
-    /'\_   _/`\
-    \___)=(___/
-    """
-        }
-
     def __init__(self):
         """Init for the Cowsay joke.
 
@@ -42,66 +22,14 @@ class CowSayJoke(Joke):
 
 
     @staticmethod
-    def slice_message(message:str, width:int) -> list:
-        """Slice a message into strings of max width
-
-        Parameters
-        ----------
-        message: str
-            The message to split.
-        width: int
-            The max width for messages.
-
-        Returns
-        -------
-        list
-            The message split into a list
-        """
-        lines = []
-        for word in message.split():
-            if len(lines) == 0:
-                lines.append(word)
-            # Add one for the inserted space.
-            elif len(lines[-1]) + len(word) + 1 <= width:
-                lines[-1] = " ".join((lines[-1], word))
-            else:
-                lines.append(word)
-        return lines
+    def cowsay_characters() -> list:
+        """Return the list of cowsay characters"""
+        res = subprocess.run(("cowsay", "-l"), capture_output=True)
+        return res.stdout.decode("utf-8").split()
 
 
     @staticmethod
-    def speech_bubble(message:str, width:int) -> str:
-        """Turn a message into a speech bubble.
-
-        Parameters
-        ----------
-        message: str
-            The message to put into a speech bubble.
-        width: int
-            The max width for speech bubble.
-
-        Returns
-        -------
-        str
-            The speech bubble containing the message.
-        """
-        # Adjust width if necessary
-        if len(message) < width - 2:
-            mess_width = len(message) 
-            bubble_width = mess_width + 2
-        else:
-            mess_width = width - 2
-            bubble_width = width
-        # Create the speech bubble.
-        bubble = "/" + "-"*bubble_width + "\\\n"
-        # Subtract 2 for the surrounding '|' characters.
-        for line in CowSayJoke.slice_message(message, mess_width):
-            bubble += f"|{line.ljust(bubble_width)}|\n"
-        bubble += "\\" + "-"*bubble_width + "/"
-        return bubble
-
-    @classmethod
-    def construct_cowsay(cls, name:str, message:str) -> str:
+    def construct_cowsay(name:str, message:str) -> str:
         """Return a random constructed cowsay
 
         Parameters
@@ -116,11 +44,9 @@ class CowSayJoke(Joke):
         str
             The cowsayed message.
         """
-        construct = "```" +\
-                cls.speech_bubble(message, 50) +\
-                cls.CHARACTERS[name] +\
-                "```"
-        return construct
+        res = subprocess.run(("cowsay", "-f", name, message), 
+                capture_output=True)
+        return f"```{res.stdout.decode('utf-8')}```"
 
 
     async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
@@ -139,7 +65,7 @@ class CowSayJoke(Joke):
             Success of joke.
         """
         # Get the constructed cowsay and name
-        name = random.choice(list(self.CHARACTERS.keys()))
+        name = random.choice(self.cowsay_characters())
         cowsay = self.construct_cowsay(name, msg.content)
         # Log joke
         self.log_info(msg.guild, msg.author, name)
