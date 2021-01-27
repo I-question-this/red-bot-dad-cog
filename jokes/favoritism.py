@@ -125,11 +125,12 @@ class FavoritismJoke(Joke):
         "welcome",
         "wonderful"
     ]
-    nice_phrases_re = re.compile("|".join(nice_phrases), re.IGNORECASE)
+    nice_phrases_re = re.compile(r"\b" + r"\b|\b".join(nice_phrases) + r"\b", re.IGNORECASE)
 
     # Recognized rude phrases/words
     rude_phrases = [
-        "abus",
+        "abuse",
+        "abusive",
         "ass",
         "awful",
         "bad",
@@ -159,7 +160,7 @@ class FavoritismJoke(Joke):
         "thief",
         "tosser"
     ]
-    rude_phrases_re = re.compile("|".join(rude_phrases), re.IGNORECASE)
+    rude_phrases_re = re.compile(r"\b" + r"\b|\b".join(rude_phrases) + r"\b", re.IGNORECASE)
 
 
     def __init__(self):
