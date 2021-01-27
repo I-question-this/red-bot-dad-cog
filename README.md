@@ -21,6 +21,7 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + Dad will stickbug you if you're not careful.
 + DaD wIlL sOmEtImEs MoCk SoMeOnEs MeSsAgE.
 + The [last meeting](https://www.youtube.com/watch?v=ZDm6j92DshA) of the byeahs informed us of all the things we agree on.
++ Runs Cowsay for your pleasure! (note this means that the cowsay program must be installed on your system)
         
 
 ## Adding a New Joke
