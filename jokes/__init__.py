@@ -7,6 +7,7 @@ from .becky import BeckyJoke
 from .bonk import BonkJoke
 from .byeah import ByeahJoke
 from .chores import ChoreJoke
+from .cowsay import CowSayJoke
 from .favoritism import FavoritismJoke
 from .her import HerJoke
 from .i_am_dad import IAmDadJoke
@@ -28,6 +29,7 @@ JOKES = {
     "BonkJoke": BonkJoke(),
     "ByeahJoke": ByeahJoke(),
     "ChoreJoke": ChoreJoke(),
+    "CowSayJoke": CowSayJoke(),
     "FavoritismJoke": FavoritismJoke(),
     "HerJoke": HerJoke(),
     "IAmDadJoke": IAmDadJoke(),

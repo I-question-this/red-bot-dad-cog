@@ -10,6 +10,7 @@ from redbot.core.bot import Red
 from typing import List
 
 from .jokes.chores import ChoreJoke
+from .jokes.cowsay import CowSayJoke
 from .jokes.favoritism import FavoritismJoke
 from .jokes.joke import Joke, NoSuchOption
 from .jokes.thats_fair import ThatsFairJoke
@@ -309,6 +310,36 @@ class Dad(commands.Cog):
 
 
     # Commands
+    @commands.command()
+    async def cowsay(self, ctx:commands.Context, message:str, 
+            character:str="default"):
+        """Cowsay a message
+        Parameters
+        ----------
+        message: str
+            The message to cowsay
+        character: str
+            The character to put the message into. Default is cow
+        """
+        if character in CowSayJoke.cowsay_characters():
+            await ctx.channel.send(
+                    CowSayJoke.construct_cowsay(character, message))
+        else:
+            await ctx.channel.send(f"'{character}' is not a valid cowsay "\
+                    "character")
+
+
+    @commands.command()
+    async def cowsay_characters(self, ctx:commands.Context):
+        """Available characters for cowsay"""
+        contents = dict(
+                title = "Available Characters",
+                description = "\n".join(sorted(
+                    CowSayJoke.cowsay_characters()))
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
     @commands.guild_only()
     @commands.command()
     async def ranking(self, ctx:commands.Context):
