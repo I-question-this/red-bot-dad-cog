@@ -2,134 +2,106 @@ from collections import defaultdict
 import datetime
 import discord
 import logging
-import os
 import random
 random.seed()
-import re
-
 from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
+from typing import List
 
-log = logging.getLogger("red.dad")
-_DEFAULT_GUILD = {
-    "barely_know_her": True,
-    "change_nickname": False,
-    "i_am_dad": True,
-    "rank_joke": True,
-    "response_chance": 60,
-    "request_help": False,
-    "request_help_chance": 1,
-    "smashing": True
-}
-
-# Determine image folder locations
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-IMAGES_DIR = os.path.join(FILE_DIR, "images")
-SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
-SMASHING_DIR = os.path.join(IMAGES_DIR, "smashing")
+from .jokes.chores import ChoreJoke
+from .jokes.cowsay import CowSayJoke
+from .jokes.favoritism import FavoritismJoke
+from .jokes.joke import Joke, NoSuchOption
+from .jokes.thats_fair import ThatsFairJoke
+from .jokes.util import OptionType, random_image, UPGRADES_DIR
+from .version import __version__, Version
 
 
-def random_image(directory: str) -> discord.File:
-    """Returns a random image from given directory in the form of a discord.File
-
-    Parameters
-    ----------
-    directory: str
-        Directory to get a random image from
-
-    Returns
-    -------
-    discord.File
-        The path to the randomly selected image.
-    """
-    gif_path = os.path.join(directory,
-            random.choice(os.listdir(directory)))
-    return discord.File(gif_path, filename="joke.gif")
+LOG = logging.getLogger("red.dad")
+_DEFAULT_GLOBAL = {"last_seen_version_number": None}
+_DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
+        "fair_child": None}
+_DEFAULT_MEMBER = {"points": 0}
 
 
 
 class Dad(commands.Cog):
-    """Dad cog"""
-
-    def __init__(self, bot: Red):
-        # Setup
-        super().__init__()
-        self.bot = bot
-        self.shut_up_until = defaultdict(lambda: None)
-        self._conf = Config.get_conf(None, 91919191, cog_name=f"{self.__class__.__name__}", force_registration=True)
-        self._conf.register_guild(**_DEFAULT_GUILD)
-        # Dad Presence Data
-        self.dad_presences = [
-                ("Balance the check book", "🏦"),
-                ("Go to work", "🏢"),
-                ("Grill some steaks", "🥩"),
-                ("Mow the lawn", "🌿"),
-                ("Rake the leaves", "🍁"),
-                ("Sleep in chair", "😴"),
-                ("Sort the ties", "👔"),
-                ("Spray for weeds", "🌿"),
-                ("Trim the hedges", "🪚"),
-                ("Walk the dog", "🐕"),
-                ("Wash the car", "🚗"),
-                ("Wear socks with sandals", "🧦"),
-                ("Watch the History Channel", "📺")
-            ]
-        # Dad Variants data
-        self.dad_variants = ["dad", "father", "daddy", "papa"]
-        # I'm Hungry Joke Daa
-        i_variants = r"""ℹ️ⁱîỉᶧĨꟷḭꞮᶤÌ𐌉İᵢIⲓǏł1ꞼȉlịḯꞽĪıᵻ ǐіɨ́̃ĬȋḮĩįɪÎᶦ𐤉ìỈІ𐌹¡ꟾÍᴉ|ïí̀ȊᵎⲒ ιȈᴵΙḬỊiᛁÏĭīΐϊίΓाjƗ"""
-        m_variants = r"""ꟽℳ₥𐌼Ɯ𐤌mΜṃɯᶭṁⲘṂⱮⲙḾᵯₘMɱꟺḿꬺ™Мᵚᴹмɰᵐᴟᶆᴍ𐌌ᛗμᶬṀꟿ̃℠ल♏️"""
-        self.iam_re = re.compile(f"""(?P<iam>\\b[{i_variants}]\\W*[ae]*[{m_variants}]\\b)\\s*(?P<name>.*)""", re.IGNORECASE)
-        self.her_re = re.compile(r""".*(?P<her>\b((\w*[^h])|(\w+h))er[s]?\b).*""", re.IGNORECASE)
-        # Rank Joke Data
-        ranks = ["general", "captain", "major", "colonel", "officer", "lieutenant", "admiral", "commander", 
-                "officer", "marshal", "cadet", "brigadier", "cadet", "sergeant", "private"]
-        self.rank_re = re.compile(r".*(?P<rank>\b(" + "|".join(ranks) + r"\b))\s+(?P<title>\b\w+\b)", re.IGNORECASE)
-        # Request Help Data
-        self.request_help_method = [
-                "before dinner, please",
-                "go",
-                "help me",
-                "if you want your allowance, "
-            ]
-        self.request_help_tasks = [
-                "clean up the yard",
-                "clean your room",
-                "fold the laundry",
-                "mow the lawn",
-                "rake the leaves",
-                "walk the dog",
-                "wash the car"
-            ]
-        # Shut Up Dad Data
-        self.shut_up_variants = ["shut up", "be quiet", "not now"]
-        # Smashing Data
-        self.smashing_re = re.compile(r"smash", re.IGNORECASE)
-
-
-    # Helper commands
-    async def acknowledge_reference(self, message: discord.Message):
-        """Acknowledge if a user mentioned this bot or a word meaning/containing dad
+    def __init__(self, bot:Red, jokes:List[Joke]):
+        """Init for the Dad cog
 
         Parameters
         ----------
-        message: discord.Message
-            Message to possibly acknowledge
-
+        bot: Red
+            The Redbot instance instantiating this cog.
+        jokes: List[Joke]
+            The list of Joke objects to be loaded.
         """
-        async def _ack():
-            await message.add_reaction("😉")
+        # Setup
+        super().__init__()
+        self.bot = bot
+        # Register jokes
+        self.jokes = jokes
+        self.guild_options_information = dict()
+        for jk in self.jokes.values():
+            jk.register_guild_settings(_DEFAULT_GUILD, 
+                    self.guild_options_information)
 
-        if self.bot.user.mentioned_in(message):
-            return await _ack()
+        self._conf = Config.get_conf(
+                None, 91919191, 
+                cog_name=f"{self.__class__.__name__}", force_registration=True
+                )
+        self._conf.register_global(**_DEFAULT_GLOBAL)
+        self._conf.register_guild(**_DEFAULT_GUILD)
+        self._conf.register_member(**_DEFAULT_MEMBER)
+        self.shut_up_until = defaultdict(lambda: None)
+        # Dad Presence Data
+        self.dad_presences = [
+            ("Balance the check book", "🏦"),
+            ("Go to work", "🏢"),
+            ("Grill some steaks", "🥩"),
+            ("Mow the lawn", "🌿"),
+            ("Rake the leaves", "🍁"),
+            ("Sleep in chair", "😴"),
+            ("Sort the ties", "👔"),
+            ("Spray for weeds", "🌿"),
+            ("Trim the hedges", "🪚"),
+            ("Walk the dog", "🐕"),
+            ("Wash the car", "🚗"),
+            ("Wear socks with sandals", "🧦"),
+            ("Watch the History Channel", "📺"),
+            ("Get milk","🥛")
+        ]
+        
+        # Dad Variants data
+        self.dad_variants = [
+                "dad", 
+                "father", 
+                "otosan",
+                "padre", 
+                "papi", 
+                "senpai"
+            ]
 
-        for dad_variant in self.dad_variants:
-            if dad_variant in message.content.lower():
-                return await _ack()
+        # Shut Up Dad Data
+        self.shut_up_variants = ["shut up", "be quiet", "not now"]
 
 
-    def if_shut_up(self, ctx: commands.Context):
+    # Helper commands
+    def if_shut_up(self, ctx:commands.Context) -> bool:
+        """Is Dad supposed to shut up?
+
+        Parameters
+        ----------
+        ctx: commands.Context
+            The context in which we determine if Dad is
+            supposed to shut up.
+
+        Returns
+        -------
+        bool
+            Boolean as to rather Dad is supposed to shut up.
+        """
         # Get shut up time
         shut_up_time = self.shut_up_until[ctx.guild.id]
         # If shut up time is not None
@@ -144,157 +116,31 @@ class Dad(commands.Cog):
                 return True
 
 
-    async def make_her_joke(self, message: discord.Message) -> bool:
-        """Return True or False on success of joke.
-
+    def is_dad_mentioned(self, msg:discord.Message) -> bool:
+        """Return rather Dad is mentioned in the message.
         Parameters
         ----------
-        message: discord.Message
-            Message to attempt a joke upon
-
+        msg: discord.Message
+            The message to investigate.
         Returns
         -------
         bool
-            Success of joke.
+            Rather the message mentions Dad or not.
         """
-        _her = self.her_re.match(message.content)
-        if _her is None:
-            # No joke was possible, stop
-            return False
-        else:
-            # Chuck the pattern, keep the match
-            _her = _her.groups("her")[1]
-            # Check if last letter is h
-            if _her[-1].lower() == 'h':
-                _her = _her[:-1]
-            # Check if their_name will make our message too long (> 2000 characters)
-            if len(_her) > 1960:
-                # Replace part of middle with ellipse
-                _her = f"{_her[:(1960/2-20)]}...{_her[(1960/2+20):]}"
-            # Construct our response
-            response = f"{_her.title()}*her*, I barely know her!"
-            # Send message
-            await message.channel.send(response)
-            # Return success
+        # Directly messaged?
+        if self.bot.user.mentioned_in(msg):
             return True
 
-
-    async def make_i_am_dad_joke(self, message: discord.Message) -> bool:
-        """Return True or False on success of joke.
-
-        Parameters
-        ----------
-        message: discord.Message
-            Message to attempt a joke upon
-
-        Returns
-        -------
-        bool
-            Success of joke.
-        """
-        match = self.iam_re.search(message.content)
-        if match is None:
-            # No joke was possible, stop
-            return False
-        else:
-            their_name = match.group("name")
-            # Check if we can attempt to rename the author
-            if await self._conf.guild(message.channel.guild).change_nickname():
-                their_name = await self.update_sons_nickname(message.author, their_name)
-
-            # Check if their_name will make our message too long (> 2000 characters)
-            if len(their_name) > 1975:
-                their_name = f"{their_name[:1975]}..."
-            # Construct our response
-            response = f"Hello \"{their_name}\", {match.group('iam')} Dad!"
-            # Send message
-            await message.channel.send(response)
-            # Return success
-            return True
+        # Is the word "dad" in the message?
+        for dad_variant in self.dad_variants:
+            if dad_variant in msg.content.lower():
+                return True
+        
+        # No mentions
+        return False
 
 
-    async def make_rank_joke(self, message: discord.Message) -> bool:
-        """Return True or False on success of joke.
-
-        Parameters
-        ----------
-        message: discord.Message
-            Message to attempt a joke upon
-
-        Returns
-        -------
-        bool
-            Success of joke.
-        """
-        match = self.rank_re.search(message.content)
-        if match is None:
-            # No joke was possible, stop
-            return False
-        else:
-            # Construct our response
-            response = {}
-            response["title"] = f"{match.group('rank').capitalize()} {match.group('title').capitalize()}"
-            # Pick random salute gif
-            salute_dir = os.path.join(cog_data_path(), "Dad/salute")
-            gif_path = os.path.join(salute_dir, random.choice(os.listdir(salute_dir)))
-            salute_gif = discord.File(gif_path, filename="salute.gif")
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{salute_gif.filename}")
-            # Send embed and salute gif
-            await message.channel.send(embed=embed, file=salute_gif)
-            # Return success
-            return True
-
-
-    async def make_smashing_joke(self, message: discord.Message) -> bool:
-        """Sending "smashing" gif and return success as bool.
-
-        Parameters
-        ----------
-        message: discord.Message
-            Message to attempt a joke upon
-
-        Returns
-        -------
-        bool
-            Success of joke.
-        """
-        match = self.smashing_re.search(message.content)
-        if match is None:
-            # No joke was possible, stop
-            return False
-        else:
-            # Construct our response
-            response = {}
-            # Pick random gif
-            smashing_gif = random_image(SMASHING_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{smashing_gif.filename}")
-            # Send embed and smashing gif
-            await message.channel.send(embed=embed, file=smashing_gif)
-            # Return success
-            return True
-
-
-    async def request_help(self, user:discord.User, channel:discord.TextChannel):
-        """Request help from a user
-
-        Parameters
-        ----------
-        user: discord.User
-            User to request help from.
-        channel: discord.TextChannel
-            Channel to send the message in.
-        """
-        method = random.choice(self.request_help_method)
-        task = random.choice(self.request_help_tasks)
-        msg = f"{user.mention} {method} {task}."
-        await channel.send(msg)
-
-
-    async def set_random_dad_presence(self):
+    async def set_random_dad_presence(self) -> None:
         """Set a random dad-like presence"""
         act, emoji = random.choice(self.dad_presences)
         # Set up for if Discord eventually allows Custom Activities for bots
@@ -303,26 +149,29 @@ class Dad(commands.Cog):
         await self.bot.change_presence(activity=cust_act)
 
 
-
-    def shut_up(self, ctx: commands.Context, shut_up_time:datetime.timedelta):
+    def shut_up(self, ctx:commands.Context, shut_up_time:datetime.timedelta)\
+            -> None:
         """Tell Dad to shut up in this guild for the specified time.
 
         Parameters
         ----------
+        ctx: commands.Context
+            The context in which we tell Dad to shut up. 
         shut_up_time: datetime.timedelta
             The amount of time to be quiet.
         """
-        self.shut_up_until[ctx.guild.id] = datetime.datetime.now() + shut_up_time
+        self.shut_up_until[ctx.guild.id] = datetime.datetime.now() +\
+                                           shut_up_time
 
 
-    async def told_to_shut_up(self, message: discord.Message):
-        """Did a user mention Dad, and tell him to shut up?
+    async def told_to_shut_up(self, message:discord.Message) -> None:
+        """Shut dad up if a user told him to shut up in their message.
+        Note that the user has to be an admin.
 
         Parameters
         ----------
         message: discord.Message
             Message to possibly be told to shut up in.
-
         """
         if self.bot.user.mentioned_in(message):
             for shut_up_variant in self.shut_up_variants:
@@ -338,107 +187,124 @@ class Dad(commands.Cog):
                     # Respond
                     if admin:
                         minutes = 5
-                        self.shut_up(message, datetime.timedelta(seconds=minutes*60))
+                        self.shut_up(message, 
+                                     datetime.timedelta(seconds=minutes*60)
+                                    )
                         await message.channel.send(
-                                f"Okay son, I'll leave you alone for {minutes} minutes")
+                                f"Okay son, I'll leave you alone for "\
+                                    f"{minutes} minutes"
+                                )
                     else:
                         await message.channel.send("No son, I am the boss")
 
 
-    async def update_sons_nickname(self, son:discord.Member, nickname:str) -> str:
-        """Update the nickname for our son, and return it
-        If it doesn't have the correct permissions it will return nickname
-        with no changes, else it will be the mention string for the Member
-        plus the extra characters that couldn't fit in the nickname.
-
-        Parameters
-        ----------
-        son: discord.Member
-            Person to update the nickname of
-        nickname: str
-            Nickname to update our son to.
-
-        Returns
-        -------
-        str
-            Either the unchanged nickname, or the mention string of the author.
-        """
-        try:
-            # Change their nickname
-            await son.edit(nick=nickname[:min(32,len(nickname))], reason="I'm Dad")
-            new_name = son.mention
-            # Check if the name was longer than the character limit
-            if len(nickname) > 32:
-                # Append the extra characters to the mention string
-                nickname = new_name + nickname[32:]
-            else:
-                # No problem
-                nickname = new_name
-            # Return the result
-            return nickname
-        except discord.Forbidden:
-            # We lacked the permissions to do this, simply return the unaltered nickname
-            return nickname
-
-
     # Listeners
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if isinstance(message.channel, discord.abc.PrivateChannel):
+    async def on_member_join(self, member:discord.Member):
+        # Get system channel (default channel for system messages like new 
+        # members)
+        sys_chan = member.guild.system_channel
+
+        # Check if the channel is set (it should be, but it might not be)
+        if sys_chan is None:
+            # It wasn't, so quit
             return
-        author = message.author
-        valid_user = isinstance(author, discord.Member) and not author.bot
-        if not valid_user:
+
+        # It was, so now we determine if it's a bot or a real person
+        if member.bot:
+            # It's a bot, so react coldly
+            await sys_chan.send(f"{member.mention} a robot can never truly "
+                "appreciate a father's love.")
+        else:
+            # It's a real person, so react warmly
+            await sys_chan.send(f"{member.mention} I am your new Dad, and I "\
+                    "love you.")
+
+
+    @commands.Cog.listener()
+    async def on_message(self, msg:discord.Message):
+        """Perform actions when a message is received
+
+        Parameters
+        ---------
+        msg: discord.Message
+            The message to perform actions upon.
+        """
+        # Check this message is within a guild
+        if isinstance(msg.channel, discord.abc.PrivateChannel):
             return
-        if await self.bot.is_automod_immune(message):
+
+        # Check this is a message from a valid user
+        if not isinstance(msg.author, discord.Member) or msg.author.bot:
+            return
+        if await self.bot.is_automod_immune(msg):
             return
 
         # Randomly change the status after a message is received
         if random.randint(1,100) == 1:
             await self.set_random_dad_presence()
 
-
         # Is a user requesting quiet time?
-        await self.told_to_shut_up(message)
+        await self.told_to_shut_up(msg)
 
         # Is Dad allowed to talk?
-        if self.if_shut_up(message):
+        if self.if_shut_up(msg):
             # Nope
             return 
 
-        # Dad always notices when he's talked about
-        # If 'dad' is mentioned, then acknowledge it
-        await self.acknowledge_reference(message)
+        # Is this the fair child?
+        if await ThatsFairJoke.is_fair_child_in_guild(
+                self, msg.author, msg.guild):
+            # It is, so respond to them and quit
+            await ThatsFairJoke.respond_to_fair_child(
+                    self, msg.channel)
+            await FavoritismJoke.add_points_to_member(
+                    self, msg.author, 1)
+            return
 
         # Does Dad notice the joke?
-        if random.randint(1,100) <= await self._conf.guild(message.channel.guild).response_chance():
-            # Attempt a "rank" joke
-            if await self._conf.guild(message.channel.guild).rank_joke():
-                if await self.make_rank_joke(message):
-                    # It was made, so end
-                    return
+        for jk in random.sample(list(self.jokes.values()), 
+                len(self.jokes)):
+            if await jk.make_verbal_joke(self, msg):
+                # Reward user for allowing a joke to occur
+                await FavoritismJoke.add_points_to_member(
+                        self, msg.author, 1)
+                # Joke was successful, end
+                break
 
-            # Attempt a "smashing" joke
-            if await self._conf.guild(message.channel.guild).smashing():
-                if await self.make_smashing_joke(message):
-                    # It was made, so end
-                    return
 
-            # Attempt an "I'm" joke
-            if await self._conf.guild(message.channel.guild).i_am_dad():
-                if await self.make_i_am_dad_joke(message):
-                    # It was made, so end
-                    return
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, 
+            payload:discord.RawReactionActionEvent) -> None:
+        """Perform actions when a reaction is added to a message.
+        Parameters
+        ----------
+        payload: discord.RawReactionActionEvent
+            An object detailing the message and the reaction.
+        """
+        # Get the channel
+        channel = self.bot.get_channel(payload.channel_id)
 
-            # Attempt an "I barely know her!" joke
-            if await self._conf.guild(message.channel.guild).barely_know_her():
-                if await self.make_her_joke(message):
-                    # It was made, so end
-                    return
-        
-        # No joke was made, but should we request help?
-        if random.randint(1,100) <= await self._conf.guild(message.channel.guild).request_help_chance():
-            await self.request_help(message.author, message.channel)
+        # Check this message is within a guild
+        if isinstance(channel, discord.abc.PrivateChannel):
+            return
+
+        # Check this emoji was added by a valid user
+        if not isinstance(payload.member, discord.Member) or payload.member.bot:
+            return
+
+        # Get Message
+        msg = await channel.fetch_message(payload.message_id)
+
+        # Does Dad notice the joke?
+        for jk in random.sample(list(self.jokes.values()), 
+                len(self.jokes)):
+            if await jk.make_reaction_joke(self, payload, msg):
+                # Reward user for allowing a joke to occur
+                await FavoritismJoke.add_points_to_member(
+                        self, msg.author, 1)
+                # Joke was successful, end
+                break
 
 
     @commands.Cog.listener()
@@ -447,10 +313,249 @@ class Dad(commands.Cog):
 
 
     # Commands
+    @commands.command()
+    async def dad_version(self, ctx:commands.Context):
+        """Return the version number for DadBot"""
+        contents = dict(
+                title = "DadBot Version Number",
+                description = f"{__version__}"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.is_owner()
+    @commands.command()
+    async def report_new_dad_version(self, ctx:commands.Context):
+        """Report an upgrade to DadBot to all registered servers."""
+        last_seen = Version.from_str(
+                await self._conf.last_seen_version_number())
+        if last_seen == __version__:
+            invoker_contents = dict(
+                    title = "No New Version",
+                    description = f"The latest version reported "\
+                            f"was already {__version__}"
+                    )
+        else:
+            # Record the new version
+            await self._conf.last_seen_version_number.set(
+                    str(__version__))
+            # Report the new version
+            guild_contents = dict(
+                    title = "Upgrades People, Upgrades!",
+                    description = f"DadBot has been upgraded from "\
+                            f"{last_seen} to {__version__}!"
+                    )
+            guild_embed = discord.Embed.from_dict(guild_contents)
+            upgrades_image = random_image(UPGRADES_DIR)
+            guild_embed.set_image(
+                    url=f"attachment://{upgrades_image.filename}")
+            # Report to each guild
+            informed_guild_names = []
+            for guild in self.bot.guilds:
+                if guild.system_channel:
+                    await guild.system_channel.send(
+                            embed=guild_embed, file=upgrades_image)
+                    informed_guild_names.append(guild.name)
+
+
+            # Report the completion of the reports.
+            invoker_contents = dict(
+                    title = "New Version",
+                    description = f"The upgrade of {last_seen} to "\
+                        f" {__version__} as been reported to severs:\n"
+                        + '\n'.join(informed_guild_names)
+                    )
+        await ctx.send(embed=discord.Embed.from_dict(invoker_contents))
+
+
+    @commands.command()
+    async def cowsay(self, ctx:commands.Context, message:str, 
+            character:str="default"):
+        """Cowsay a message
+        Parameters
+        ----------
+        message: str
+            The message to cowsay
+        character: str
+            The character to put the message into. Default is cow
+        """
+        if character in CowSayJoke.cowsay_characters():
+            await ctx.channel.send(
+                    CowSayJoke.construct_cowsay(character, message))
+        else:
+            await ctx.channel.send(f"'{character}' is not a valid cowsay "\
+                    "character")
+
+
+    @commands.command()
+    async def cowsay_characters(self, ctx:commands.Context):
+        """Available characters for cowsay"""
+        contents = dict(
+                title = "Available Characters",
+                description = "\n".join(sorted(
+                    CowSayJoke.cowsay_characters()))
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def ranking(self, ctx:commands.Context):
+        """What are the points assigned to all the users?
+        """
+        # Sort members by points
+        sorted_members = list(sorted(
+                [(await self._conf.member(member).points(), member) for 
+                    member in ctx.guild.members],
+                key=lambda pair: -pair[0]
+            ))
+        # Turn into formatted strings
+        rankings = []
+        for points, member in sorted_members:
+            if not member.bot:
+                rankings.append(f"{member.display_name}: {points}")
+        # Send the results
+        contents = dict(
+                title = "My Children's Rankings",
+                description = "\n".join(rankings)
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def favorite_child(self, ctx:commands.Context):
+        """Who is Dad's favorite child (in this server)?
+        """
+        # Get the id number
+        fav_id = await self._conf.guild(ctx.guild).favorite_child()
+        # Find the member with the specified id number
+        if fav_id is None:
+            await ctx.channel.send("None of you are worth my love.")
+        else:
+            fav_child = discord.utils.get(ctx.guild.members, id=int(fav_id))
+            await ctx.channel.send(f"{fav_child.mention} is my"\
+                    " favorite child.")
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def hated_child(self, ctx:commands.Context):
+        """Who is Dad's most hated child (in this server)?
+        """
+        # Get the id number
+        hate_id = await self._conf.guild(ctx.guild).hated_child()
+        # Find the member with the specified id number
+        if hate_id is None:
+            await ctx.channel.send("I don't hate any of my children.")
+        else:
+            hate_child = discord.utils.get(ctx.guild.members, id=int(hate_id))
+            await ctx.channel.send(f"{hate_child.mention} is my"\
+                    " most hated and regretted child.")
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def request_chore_for(self, ctx:commands.Context, 
+            member:discord.Member):
+        """Make Dad request a chore for a specified user
+        Parameters
+        ----------
+        member: discord.Member
+            The user to request the chore for.
+        """
+        if member.bot:
+            await ctx.channel.send("Chores are for children.")
+            await ChoreJoke.request_chore(self, ctx.channel, ctx.author)
+        else:
+            await ChoreJoke.request_chore(self, ctx.channel, member)
+
+
+    async def get_option_strings(self, guild:discord.Guild) -> str:
+        """Get the chances for each joke.
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            The guild in which to get the chances of
+        """
+        guild_option_strings = []
+        for opt in self.guild_options_information.values():
+            if opt.type_convertor != OptionType.HIDDEN:
+                value = await Joke.get_guild_option(self, guild, opt.name)
+                guild_option_strings.append(f"{opt.name}: {value}")
+        guild_option_strings = '\n'.join(sorted(guild_option_strings))
+        return guild_option_strings
+
+
+    @commands.guild_only()
+    @commands.command()
+    async def explain_points(self, ctx:commands.Context):
+        """Explain how children gain and lose points.
+        """
+        # Making Jokes
+        explaination = "----Making Jokes----\n"
+        explaination += "Dad will give points to those who allow him to make "
+        explaination += "a joke. Note that each joke only has a percent "
+        explaination += "chance of occurring. The current jokes and settings "
+        explaination += "are:\n" 
+        explaination += "`" + await self.get_option_strings(ctx.guild) + "`\n"
+
+        # Doing Chores
+        explaination += "\n----Doing Chores----\n"
+        explaination += "Dad will give points to those who do chores. He will "
+        explaination += "also take away points for those who are asked to a "
+        explaination += "do a chore, but don't. One can either wait for Dad "
+        explaination += "to randomly assign a chore, or one can request one "
+        explaination += " with the `request_chore_for @CHILD` command.\n"
+
+        # Reacting to messages
+        explaination += "\n----Reacting to Dad's Messages----\n"
+        explaination += "Dad will give points to those who react to his "
+        explaination += " messages with the following reactions:\n"
+        explaination += ", ".join(FavoritismJoke.nice_emojis) + "\n"
+        explaination += "Dad will take points from those who react to his "
+        explaination += " messages with the following reactions:\n"
+        explaination += ", ".join(FavoritismJoke.rude_emojis) + "\n"
+
+        # Making reference to Dad
+        explaination += "\n----Making Reference to Dad----\n"
+        explaination += "Dad has a simple understanding of when he's being "
+        explaination += "talked about. He knows this if a message contains "
+        explaination += f" {self.bot.user.mention}, "
+        explaination += " or any of the following words that mean \"Dad\":\n"
+        explaination += "`" + ", ".join(self.dad_variants) + "`\n"
+        explaination += "He'll also react to said message with 😉. If one "
+        explaination += "uses a nice word in the message he will reward "
+        explaination += "points, as he assumes you're saying nice things "
+        explaination += "about him. He recognizes the following as nice "
+        explaination += "words: \n"
+        explaination += "`" + ", ".join(FavoritismJoke.nice_phrases) + "`\n"
+        explaination += "If a message contains rude words, and no nice words "
+        explaination += "then Dad assumes you're talking bad about him and "
+        explaination += "takes away points. The following are recognized rude "
+        explaination += "words:\n"
+        explaination += "`" + ", ".join(FavoritismJoke.rude_phrases) + "`"
+
+        for chunk in [explaination[i:i+2048] for i in 
+                range(0, len(explaination), 2048)]:
+            contents = dict(
+                    title="How to Gain/Lose Favoritism Points",
+                    description=chunk
+                    )
+            embed = discord.Embed.from_dict(contents)
+            await ctx.send(embed=embed)
+
+
     @commands.guild_only()
     @commands.admin()
-    @commands.command(name="shut_up_dad")
-    async def shut_up_dad(self, ctx: commands.Context, minutes:int):
+    @commands.group()
+    async def dad_settings(self, ctx:commands.Context) -> None:
+        """Admin commands"""
+
+
+    @dad_settings.command()
+    async def shut_up_dad(self, ctx:commands.Context, minutes:int):
         """Admin command for shutting Dad up
 
         Parameters
@@ -466,141 +571,104 @@ class Dad(commands.Cog):
                 )
         embed = discord.Embed.from_dict(contents)
         return await ctx.send(embed=embed)
-   
-
-    @commands.guild_only()
-    @commands.admin()
-    @commands.group()
-    async def dad_settings(self, ctx: commands.Context) -> None:
-        """Admin commands"""
 
 
-    @dad_settings.command(name="set_request_help_chance")
-    async def set_request_help_chance(self, ctx: commands.Context, 
-            request_help_chance:int):
-        """Response chance for jokes.
+    @dad_settings.command()
+    async def list_options(self, ctx:commands.Context):
+        """List the values for all the options for jokes"""
+        contents = dict(
+                title = "Response Chances",
+                description = "**Guild**: \n"
+                    f"{await self.get_option_strings(ctx.guild)}"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @dad_settings.command()
+    async def set_option(self, ctx:commands.Context, name:str, 
+            new_value):
+        """Set the option for a joke.
+        Parameters
+        ----------
+        name: str
+            The name of the option to modify.
+        new_value: "any"
+            The new value.
+        """
+        try:
+            await Joke.set_guild_option_value(self, ctx.guild, name,
+                    new_value)
+            title = "Set Response Chance: Success"
+            description = f"Set {name} to {new_value}"
+            # Log points change
+            LOG.info(f"Response Chance Change: "\
+                    f"In \"{ctx.guild.name}\" -> "\
+                    f"{description}")
+            if "chance" in name:
+                description += "%"
+        except NoSuchOption as e:
+            title = "Set Option: Failure"
+            description = str(e)
+        except ValueError as e:
+            title = "Set Option: Failure"
+            description = str(e)
+        contents = dict(
+                title = title,
+                description = description
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @dad_settings.command()
+    async def reset_points(self, ctx:commands.Context, member:discord.Member):
+        """Admin command for resetting an individual user's points with Dad
 
         Parameters
         ----------
-        request_help_chance: int
-            The chance that Dad will request help after receiving a message.
+        member: discord.Member
+            Member of which points are being reset
         """
-        if 0 < request_help_chance <= 100:
-            await self._conf.guild(ctx.guild).request_help_chance.set(request_help_chance)
-            contents = dict(
-                    title="Set Request Help Chance: Success",
-                    description=f"Request help chance set to {request_help_chance}%"
-                    )
-        else:
-            contents = dict(
-                    title="Set Request Help Chance: Failure",
-                    description=f"Request help chance has to be (0,100], which is not {response_chance}"
-                    )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
+        # Set new points
+        await self._conf.member(member).points.set(0)
+        
+        # Recalculate favorite child for the associated guild
+        await FavoritismJoke.calculate_favoritism_in_guild(self, ctx.guild)
+        
+        # Log points reset for member
+        LOG.info(f"Points Reset: "\
+                f"In \"{ctx.guild.name}\" -> "\
+                f"Points have been reset for "\
+                f"\"{member.display_name}\"")
+
+        # Inform the user that they have reset the points appropriately
+        contents = dict(
+                title = "Points have been erased",
+                description = f"I have lost all memory of {member.mention}"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
 
 
-    # Set commands
-    @dad_settings.command(name="set_response_chance")
-    async def set_response_chance(self, ctx: commands.Context, response_chance:int):
-        """Response chance for jokes.
-
-        Parameters
-        ----------
-        response_chance: int
-            The chance that Dad will respond.
+    @dad_settings.command()
+    async def reset_all_points(self, ctx: commands.Context):
+        """Admin command for resetting points for all of Dad's children
         """
-        if 0 < response_chance <= 100:
-            await self._conf.guild(ctx.guild).response_chance.set(response_chance)
-            contents = dict(
-                    title="Set Response Chance: Success",
-                    description=f"Response chance set to {response_chance}%"
-                    )
-        else:
-            contents = dict(
-                    title="Set Response Chance: Failure",
-                    description=f"Response chance has to be (0,100], which is not {response_chance}"
-                    )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
+        # Reset Dad Points (TM) for all users in the server
+        for member in ctx.guild.members:
+            if not member.bot:
+                await self._conf.member(member).points.set(0)
 
+        # Recalculate favorite child for the associated guild
+        await FavoritismJoke.calculate_favoritism_in_guild(self, ctx.guild)
+        # Log points reset for all members
+        LOG.info(f"Points Reset: "\
+                f"\"{ctx.guild.name}\" -> "\
+                f"Points have been reset for "\
+                f"all members")
 
-    # Toggle commands
-    @dad_settings.command(name="toggle_barely_know_her")
-    async def toggle_barely_know_her(self, ctx: commands.Context):
-        """Rather "I barely know her" jokes should be made at all"""
-        await self._conf.guild(ctx.guild).barely_know_her.set(
-                not await self._conf.guild(ctx.guild).barely_know_her()) 
+        # Inform the user that they have reset the points appropriately
         contents = dict(
-                title="Toggled \"Barely Know Her\" Jokes",
-                description=f"Set 'barely_know_her' to {await self._conf.guild(ctx.guild).barely_know_her()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @dad_settings.command(name="toggle_i_am_dad")
-    async def toggle_i_am_dad(self, ctx: commands.Context):
-        """Rather 'Hello "hungry", I'm Dad!' jokes should be made at all"""
-        await self._conf.guild(ctx.guild).i_am_dad.set(
-                not await self._conf.guild(ctx.guild).i_am_dad()) 
-        contents = dict(
-                title="Toggled \"I'm Dad!\" Jokes",
-                description=f"Set 'i_am_dad' to {await self._conf.guild(ctx.guild).i_am_dad()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @dad_settings.command(name="toggle_nickname_change")
-    async def toggle_nickname_change(self, ctx: commands.Context):
-        """Rather users nicknames should be changed for "I'm" jokes"""
-        await self._conf.guild(ctx.guild).change_nickname.set(
-                not await self._conf.guild(ctx.guild).change_nickname()) 
-        contents = dict(
-                title="Toggled Nickname Change",
-                description=f"Set 'nickname_change' to {await self._conf.guild(ctx.guild).change_nickname()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @dad_settings.command(name="toggle_rank_joke")
-    async def toggle_rank(self, ctx: commands.Context):
-        """'That's a major inconvenience' -> MAJOR inconvenience **SALUTE**"""
-        await self._conf.guild(ctx.guild).rank_joke.set(
-                not await self._conf.guild(ctx.guild).rank_joke()) 
-        contents = dict(
-                title="Toggled \"Rank\" Jokes",
-                description=f"Set 'rank_joke' to {await self._conf.guild(ctx.guild).rank_joke()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @dad_settings.command(name="toggle_request_help")
-    async def toggle_request_help(self, ctx: commands.Context):
-        """Toggles requesting help from guild members for dad tasks"""
-        await self._conf.guild(ctx.guild).request_help.set(
-                not await self._conf.guild(ctx.guild).request_help()) 
-        contents = dict(
-                title="Toggled Request Help",
-                description=f"Set 'request_help' to {await self._conf.guild(ctx.guild).request_help()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
-
-
-    @dad_settings.command(name="toggle_smashing")
-    async def toggle_smashing(self, ctx: commands.Context):
-        """Toggles making "smashing" jokes"""
-        await self._conf.guild(ctx.guild).smashing.set(
-                not await self._conf.guild(ctx.guild).smashing()) 
-        contents = dict(
-                title="Toggled Smashing",
-                description=f"Set 'smashing' to "\
-                        f"{await self._conf.guild(ctx.guild).smashing()}"
-                )
-        embed = discord.Embed.from_dict(contents)
-        return await ctx.send(embed=embed)
+            title="Points have been erased",
+            description="I have lost memory of all my children"
+        )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
 
