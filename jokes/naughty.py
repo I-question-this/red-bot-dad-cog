@@ -4,10 +4,9 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .favoritsm import FavoritismJoke
+from .favoritism import FavoritismJoke
 from .util import random_image, BONK_DIR, NAUGHTY_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class NaughtyJoke(Joke):
     def __init__(self):
@@ -36,12 +35,13 @@ class NaughtyJoke(Joke):
         bool
             Success of joke.
         """
-        if not FavoritismJoke.is_message_rude(msg.content):
+        match = FavoritismJoke.is_message_rude(msg.content)
+        if not match:
             # Nothing wrong was said 
             return False
         else:
             # Log joke
-            LOG.info(f"Naughty: {msg.content}")
+            self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {"title":"Children shouldn't swear"}
             # Pick random gif

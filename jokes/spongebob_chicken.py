@@ -6,7 +6,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import random_image, SPONGEBOB_CHICKEN_DIR
 
-LOG = logging.getLogger("red.dad")
 
 class SpongebobChickenJoke(Joke):
     def __init__(self):
@@ -39,7 +38,7 @@ class SpongebobChickenJoke(Joke):
         if len(msg.content) == 0:
             return False
         # LoG jOkE
-        LOG.info(f"SpOnGeBoB cHiCkEn: MoCkInG cOmMeNcE")
+        self.log_info(msg.guild, msg.author, "GoTeM")
         # ConStRuCt oUr ReSpOnSe
         response = {"description":self.chicken_case(msg.content)}
         # PiCk RaNdOm GiF

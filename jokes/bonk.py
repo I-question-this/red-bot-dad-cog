@@ -4,10 +4,8 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .favoritsm import FavoritismJoke
+from .favoritism import FavoritismJoke
 from .util import random_image, BONK_DIR
-
-LOG = logging.getLogger("red.dad")
 
 class BonkJoke(Joke):
     def __init__(self):
@@ -47,7 +45,7 @@ class BonkJoke(Joke):
             return False
         else:
             # Log joke
-            LOG.info(f"bonk: {msg.content}")
+            self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {"title":"BONK!"}
             # Pick random gif

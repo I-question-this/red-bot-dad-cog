@@ -8,7 +8,6 @@ from redbot.core.bot import Red
 from .joke import Joke
 from .util import Option, OptionType
 
-LOG = logging.getLogger("red.dad")
 
 class FavoritismJoke(Joke):
     # Class variables
@@ -126,11 +125,12 @@ class FavoritismJoke(Joke):
         "welcome",
         "wonderful"
     ]
-    nice_phrases_re = re.compile("|".join(nice_phrases), re.IGNORECASE)
+    nice_phrases_re = re.compile(r"\b" + r"\b|\b".join(nice_phrases) + r"\b", re.IGNORECASE)
 
     # Recognized rude phrases/words
     rude_phrases = [
-        "abus",
+        "abuse",
+        "abusive",
         "ass",
         "awful",
         "bad",
@@ -160,7 +160,7 @@ class FavoritismJoke(Joke):
         "thief",
         "tosser"
     ]
-    rude_phrases_re = re.compile("|".join(rude_phrases), re.IGNORECASE)
+    rude_phrases_re = re.compile(r"\b" + r"\b|\b".join(rude_phrases) + r"\b", re.IGNORECASE)
 
 
     def __init__(self):
@@ -251,7 +251,7 @@ class FavoritismJoke(Joke):
                     return await self.thank_message_author(bot, msg)
 
         # Report success
-        return True
+        return False
 
 
     async def _make_reaction_joke(self, bot:Red, payload, 
@@ -279,12 +279,8 @@ class FavoritismJoke(Joke):
                 # Joke was made, indicate so with True
                 return True
             elif await self.is_added_emoji_nice(payload.emoji):
-                # It was, so silently reward them
-                LOG.info(f"Reward User--Added Emoji: "\
-                        f"\"{payload.member.guild.name}\""\
-                        f"({payload.member.guild.id})->"\
-                        f"\"{payload.member.display_name}\""\
-                        f"({payload.member.id})")
+                # It was, so reward them
+                self.thank_message_author(bot, msg)
                 await self.add_points_to_member(bot, payload.member, 1)
                 # Joke was made, indicate so with True
                 return True
@@ -312,8 +308,7 @@ class FavoritismJoke(Joke):
         # Set new points
         await bot._conf.member(member).points.set(current_points + points)
         # Log points change
-        LOG.info(f"Points: \"{member.guild.name}\"({member.guild.id})->"\
-                f"\"{member.display_name}\"({member.id}): "\
+        cls.log_info(member.guild, member, 
                 f"{current_points}->{current_points + points}")
         # Recalculate favorite child for the associated guild
         await cls.calculate_favoritism_in_guild(bot, member.guild)
@@ -353,31 +348,20 @@ class FavoritismJoke(Joke):
         if favorite_child is not None:
             await bot._conf.guild(guild).favorite_child.set(
                     favorite_child.id)
-            # Log recalculation of favorite child
-            LOG.info(f"Favorite Child: "\
-                    f"\"{guild.name}\"({guild.id})->"\
-                    f"\"{favorite_child.display_name}\"({favorite_child.id})")
         else:
             await bot._conf.guild(guild).favorite_child.set(None)
-            # Log recalculation of favorite child
-            LOG.info(f"Favorite Child: "\
-                    f"\"{guild.name}\"({guild.id})->"\
-                    f"None")
+        # Log recalculation of favorite child
+        cls.log_info(guild, favorite_child, "Current favorite child")
 
         # Save the hated child 
         if hated_child is not None:
             await bot._conf.guild(guild).hated_child.set(
                     hated_child.id)
-            # Log recalculation of hated child
-            LOG.info(f"Hated Child: "\
-                    f"\"{guild.name}\"({guild.id})->"\
-                    f"\"{hated_child.display_name}\"({hated_child.id})")
         else:
             await bot._conf.guild(guild).hated_child.set(None)
-            # Log recalculation of hated child
-            LOG.info(f"Hated Child: "\
-                    f"\"{guild.name}\"({guild.id})->"\
-                    f"None")
+        # Log recalculation of hated child
+        cls.log_info(guild, hated_child, "Current hated child")
+
 
     @classmethod
     async def is_added_emoji_nice(cls, emoji:discord.Emoji) -> bool:
@@ -473,7 +457,7 @@ class FavoritismJoke(Joke):
 
 
     @classmethod
-    def is_message_rude(cls, message_content:str) -> bool:
+    def is_message_rude(cls, message_content:str) -> re.Match:
         """Return rather the message is rude to Dad
         Parameters
         ----------
@@ -481,11 +465,11 @@ class FavoritismJoke(Joke):
             The message to investigate.
         Returns
         -------
-        bool
-            Rather the message is rude to Dad or not
+        re.Match
+            The matched regular expression.
         """
         match = cls.rude_phrases_re.search(message_content)
-        return match is not None
+        return match
 
 
     @classmethod
@@ -508,9 +492,7 @@ class FavoritismJoke(Joke):
             (False)
         """
         # Log punishment
-        LOG.info(f"Punish User: "\
-                f"\"{member.guild.name}\"({member.guild.id})->"\
-                f"\"{member.display_name}\"({member.id})")
+        cls.log_info(member.guild, member, "Punished")
         # Decrement a point
         await cls.add_points_to_member(bot, member, -3)
         # Send them a verbal punishment
@@ -537,21 +519,22 @@ class FavoritismJoke(Joke):
             Indicates rather the response was verbal (True) or non-verbal 
             (False)
         """
-        # Log Thank You
-        LOG.info(f"Thank User: "\
-                f"\"{msg.guild.name}\"({msg.guild.id})->"\
-                f"\"{msg.author.display_name}\"({msg.author.id})")
         # Add a point
         await cls.add_points_to_member(bot, msg.author, 3)
         # Thank the user
         if random.randint(0,19) == 0:
             # Send them a verbal thank you
             await msg.channel.send(f"Thank you {msg.author.mention}.")
+            # Log Thank You
+            cls.log_info(msg.guild, msg.author, 
+                    "Thank you message sent to nicety.")
             # Since it was a verbal message return True to indicate that
             return True
         else:
             # Send them a nice emoji
             await msg.add_reaction(random.choice(cls.nice_emojis))
+            cls.log_info(msg.guild, msg.author, 
+                    "Thank you emoji to nicety.")
             # Since it was NOT a verbal message return False to indicate that
             return False
 

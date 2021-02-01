@@ -5,7 +5,6 @@ from redbot.core.bot import Red
 from redbot.core.utils.menus import start_adding_reactions
 from .joke import Joke
 
-LOG = logging.getLogger("red.dad")
 
 class OkBoomerJoke(Joke):
     def __init__(self):
@@ -31,7 +30,7 @@ class OkBoomerJoke(Joke):
         # Set up super class
         super().__init__("ok_boomer", 100)
         # Set up this class
-        self.zoomer_re = re.compile(r"(o)?k(ay)? zoomer", re.IGNORECASE)
+        self.zoomer_re = re.compile(r"zoomer", re.IGNORECASE)
         self.ok_zoomer = [
                 "🆗",
                 "🇿",
@@ -41,7 +40,7 @@ class OkBoomerJoke(Joke):
                 "🇪",
                 "🇷"
             ]
-        self.boomer_re = re.compile(r"(o)?k(ay)? boomer", re.IGNORECASE)
+        self.boomer_re = re.compile(r"boomer", re.IGNORECASE)
         self.ok_boomer = [
                 "🆗",
                 "🇧",
@@ -78,14 +77,14 @@ class OkBoomerJoke(Joke):
                 return False
             else:
                 # Log joke
-                LOG.info(f"Ok Boomer: {match}")
+                self.log_info(msg.guild, msg.author, match)
                 # Add the "ok zoomer" response
                 start_adding_reactions(msg, self.ok_boomer)
                 # Return success
                 return True
         else:
             # Log joke
-            LOG.info(f"Ok Boomer: {match}")
+            self.log_info(msg.guild, msg.author, match)
             # Add the "ok zoomer" response
             start_adding_reactions(msg, self.ok_zoomer)
             # Return success

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import discord
+import logging
 import random
 random.seed()
 from redbot.core import commands
@@ -20,7 +21,19 @@ class NoSuchOption(Exception):
 
 
 
-class Joke(ABC): 
+class Joke(ABC):
+    LOG = logging.getLogger("red.dad")
+
+
+    @classmethod
+    def log_info(cls, guild:discord.Guild, jokester:discord.Member, 
+            reason:str) -> None:
+        cls.LOG.info(f"{cls.__name__.capitalize()}: "\
+                f"In \"{guild.name}\"--"\
+                f"\"{jokester.display_name if jokester else None}\" "\
+                f"-> \"{reason}\"")
+
+
     def __init__(self, name:str, default_chance:float):
         """Init for the abstract Joke object.
         The purpose of this object is to generalize the flow of the typical 
