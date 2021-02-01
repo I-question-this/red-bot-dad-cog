@@ -17,6 +17,7 @@ SOCIETY_DIR = os.path.join(IMAGES_DIR, "society")
 SIMPLY_DIR = os.path.join(IMAGES_DIR, "simply")
 SPONGEBOB_CHICKEN_DIR = os.path.join(IMAGES_DIR, "spongebob_chicken")
 STICKBUG_DIR = os.path.join(IMAGES_DIR, "stickbug")
+UPGRADES_DIR = os.path.join(IMAGES_DIR, "upgrades")
 
 
 def convert_to_boolean(boolean: str) -> bool:
