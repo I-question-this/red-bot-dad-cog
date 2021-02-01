@@ -399,7 +399,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
-    @commands.command()
+    @commands.command(aliases=["rankings"])
     async def ranking(self, ctx:commands.Context):
         """What are the points assigned to all the users?
         """
