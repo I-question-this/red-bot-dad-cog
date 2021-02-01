@@ -13,10 +13,12 @@ from .jokes.chores import ChoreJoke
 from .jokes.favoritsm import FavoritismJoke
 from .jokes.joke import Joke, NoSuchOption
 from .jokes.thats_fair import ThatsFairJoke
-from .jokes.util import OptionType
+from .jokes.util import OptionType, random_image, UPGRADES_DIR
+from .version import __version__, Version
 
 
 LOG = logging.getLogger("red.dad")
+_DEFAULT_GLOBAL = {"last_seen_version_number": None}
 _DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
         "fair_child": None}
 _DEFAULT_MEMBER = {"points": 0}
@@ -48,6 +50,7 @@ class Dad(commands.Cog):
                 None, 91919191, 
                 cog_name=f"{self.__class__.__name__}", force_registration=True
                 )
+        self._conf.register_global(**_DEFAULT_GLOBAL)
         self._conf.register_guild(**_DEFAULT_GUILD)
         self._conf.register_member(**_DEFAULT_MEMBER)
         self.shut_up_until = defaultdict(lambda: None)
@@ -309,6 +312,91 @@ class Dad(commands.Cog):
 
 
     # Commands
+    @commands.command()
+    async def dad_version(self, ctx:commands.Context):
+        """Return the version number for DadBot"""
+        contents = dict(
+                title = "DadBot Version Number",
+                description = f"{__version__}"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @commands.is_owner()
+    @commands.command()
+    async def report_new_dad_version(self, ctx:commands.Context):
+        """Report an upgrade to DadBot to all registered servers."""
+        last_seen = Version.from_str(
+                await self._conf.last_seen_version_number())
+        if last_seen == __version__:
+            invoker_contents = dict(
+                    title = "No New Version",
+                    description = f"The latest version reported "\
+                            f"was already {__version__}"
+                    )
+        else:
+            # Record the new version
+            await self._conf.last_seen_version_number.set(
+                    str(__version__))
+            # Report the new version
+            guild_contents = dict(
+                    title = "Upgrades People, Upgrades!",
+                    description = f"DadBot has been upgraded from "\
+                            f"{last_seen} to {__version__}!"
+                    )
+            guild_embed = discord.Embed.from_dict(guild_contents)
+            upgrades_image = random_image(UPGRADES_DIR)
+            guild_embed.set_image(
+                    url=f"attachment://{upgrades_image.filename}")
+            # Report to each guild
+            informed_guild_names = []
+            for guild in self.bot.guilds:
+                if guild.system_channel:
+                    await guild.system_channel.send(
+                            embed=guild_embed, file=upgrades_image)
+                    informed_guild_names.append(guild.name)
+
+
+            # Report the completion of the reports.
+            invoker_contents = dict(
+                    title = "New Version",
+                    description = f"The upgrade of {last_seen} to "\
+                        f" {__version__} as been reported to severs:\n"
+                        + '\n'.join(informed_guild_names)
+                    )
+        await ctx.send(embed=discord.Embed.from_dict(invoker_contents))
+
+
+    @commands.command()
+    async def cowsay(self, ctx:commands.Context, message:str, 
+            character:str="default"):
+        """Cowsay a message
+        Parameters
+        ----------
+        message: str
+            The message to cowsay
+        character: str
+            The character to put the message into. Default is cow
+        """
+        if character in CowSayJoke.cowsay_characters():
+            await ctx.channel.send(
+                    CowSayJoke.construct_cowsay(character, message))
+        else:
+            await ctx.channel.send(f"'{character}' is not a valid cowsay "\
+                    "character")
+
+
+    @commands.command()
+    async def cowsay_characters(self, ctx:commands.Context):
+        """Available characters for cowsay"""
+        contents = dict(
+                title = "Available Characters",
+                description = "\n".join(sorted(
+                    CowSayJoke.cowsay_characters()))
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
     @commands.guild_only()
     @commands.command()
     async def ranking(self, ctx:commands.Context):
