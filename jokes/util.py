@@ -8,6 +8,7 @@ random.seed()
 # Determine image folder locations
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(os.path.dirname(FILE_DIR), "images")
+CANCELED_DIR = os.path.join(IMAGES_DIR, "canceled")
 BONK_DIR = os.path.join(IMAGES_DIR, "bonk")
 NAUGHTY_DIR = os.path.join(IMAGES_DIR, "naughty")
 SALUTES_DIR = os.path.join(IMAGES_DIR, "salutes")
