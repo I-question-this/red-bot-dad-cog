@@ -22,6 +22,8 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + DaD wIlL sOmEtImEs MoCk SoMeOnEs MeSsAgE.
 + The [last meeting](https://www.youtube.com/watch?v=ZDm6j92DshA) of the byeahs informed us of all the things we agree on.
 + Runs Cowsay for your pleasure! (note this means that the cowsay program must be installed on your system)
++ Dad supports cancel culture, and will allow his children to cancel each other.
+  + He'll rarely cancel random children too.
         
 
 ## Adding a New Joke

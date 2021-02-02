@@ -9,6 +9,7 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
 from typing import List
 
+from .jokes.canceled import CanceledJoke
 from .jokes.chores import ChoreJoke
 from .jokes.cowsay import CowSayJoke
 from .jokes.favoritism import FavoritismJoke
@@ -22,7 +23,7 @@ LOG = logging.getLogger("red.dad")
 _DEFAULT_GLOBAL = {"last_seen_version_number": None}
 _DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
         "fair_child": None}
-_DEFAULT_MEMBER = {"points": 0}
+_DEFAULT_MEMBER = {"points": 0, "cancel_counter": 0}
 
 
 
@@ -399,7 +400,7 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
-    @commands.command()
+    @commands.command(aliases=["rankings"])
     async def ranking(self, ctx:commands.Context):
         """What are the points assigned to all the users?
         """
@@ -469,6 +470,47 @@ class Dad(commands.Cog):
             await ChoreJoke.request_chore(self, ctx.channel, ctx.author)
         else:
             await ChoreJoke.request_chore(self, ctx.channel, member)
+
+
+    @commands.guild_only()
+    @commands.command(aliases=["youre_canceled",
+        "cancels", "cancela"])
+    async def canceled(self, ctx:commands.Context, member:discord.Member):
+        """Cancel someone, they deserve it.
+        (cancel is a reserved command in RedBot)
+
+        Parameters
+        ----------
+        member: discord.Member
+            The user to cancel.
+        """
+        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member)
+
+
+    @commands.guild_only()
+    @commands.command(aliases=["cancel_counters", 
+        "cancel_counter", "canceled_counter",
+        "canceled_count", "cancel_count"])
+    async def canceled_counters(self, ctx:commands.Context):
+        """Cancel counter for everyone"""
+        # Sort members by points
+        sorted_members = list(sorted(
+                [(await self._conf.member(member).\
+                        cancel_counter(), member) for 
+                    member in ctx.guild.members],
+                key=lambda pair: -pair[0]
+            ))
+        # Turn into formatted strings
+        cancel_counters = []
+        for counter, member in sorted_members:
+            if not member.bot:
+                cancel_counters.append(f"{member.display_name}: {counter}")
+        # Send the results
+        contents = dict(
+                title = "How Many Cancellations",
+                description = "\n".join(cancel_counters)
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
 
 
     async def get_option_strings(self, guild:discord.Guild) -> str:
