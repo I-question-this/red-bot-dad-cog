@@ -345,13 +345,13 @@ class Dad(commands.Cog):
                     description = f"DadBot has been upgraded from "\
                             f"{last_seen} to {__version__}!"
                     )
-            guild_embed = discord.Embed.from_dict(guild_contents)
-            upgrades_image = random_image(UPGRADES_DIR)
-            guild_embed.set_image(
-                    url=f"attachment://{upgrades_image.filename}")
             # Report to each guild
             informed_guild_names = []
             for guild in self.bot.guilds:
+                upgrades_image = random_image(UPGRADES_DIR)
+                guild_embed = discord.Embed.from_dict(guild_contents)
+                guild_embed.set_image(
+                        url=f"attachment://{upgrades_image.filename}")
                 if guild.system_channel:
                     await guild.system_channel.send(
                             embed=guild_embed, file=upgrades_image)
