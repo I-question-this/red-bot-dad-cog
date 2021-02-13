@@ -346,13 +346,13 @@ class Dad(commands.Cog):
                     description = f"DadBot has been upgraded from "\
                             f"{last_seen} to {__version__}!"
                     )
-            guild_embed = discord.Embed.from_dict(guild_contents)
-            upgrades_image = random_image(UPGRADES_DIR)
-            guild_embed.set_image(
-                    url=f"attachment://{upgrades_image.filename}")
             # Report to each guild
             informed_guild_names = []
             for guild in self.bot.guilds:
+                upgrades_image = random_image(UPGRADES_DIR)
+                guild_embed = discord.Embed.from_dict(guild_contents)
+                guild_embed.set_image(
+                        url=f"attachment://{upgrades_image.filename}")
                 if guild.system_channel:
                     await guild.system_channel.send(
                             embed=guild_embed, file=upgrades_image)
@@ -473,9 +473,10 @@ class Dad(commands.Cog):
 
 
     @commands.guild_only()
-    @commands.command(aliases=["youre_canceled",
-        "cancels", "cancela"])
-    async def canceled(self, ctx:commands.Context, member:discord.Member):
+    @commands.command(aliases=["youre_canceled", "youre_cancelled",
+        "cancels", "cancela", "cancelled"])
+    async def canceled(self, ctx:commands.Context, 
+            member:discord.Member,  *words):
         """Cancel someone, they deserve it.
         (cancel is a reserved command in RedBot)
 
@@ -483,8 +484,14 @@ class Dad(commands.Cog):
         ----------
         member: discord.Member
             The user to cancel.
+        reason: str
+            The reason to which a user is to be cancelled.
         """
-        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member)
+        reason = " ".join(words)
+        if len(reason) == 0:
+            reason = f"You're a disappointment to "\
+                f"{self.bot.user.mention}"
+        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member, reason)
 
 
     @commands.guild_only()
