@@ -484,8 +484,14 @@ class Dad(commands.Cog):
         ----------
         member: discord.Member
             The user to cancel.
+        reason: str
+            The reason to which a user is to be cancelled.
         """
-        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member)
+        reason = " ".join(words)
+        if len(reason) == 0:
+            reason = f"You're a disappointment to "\
+                f"{self.bot.user.mention}"
+        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member, reason)
 
 
     @commands.guild_only()

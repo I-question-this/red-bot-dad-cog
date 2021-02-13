@@ -36,12 +36,14 @@ class CanceledJoke(Joke):
             Success of joke.
         """
         # Cancel the message author
-        await self.cancel(bot, msg.channel, bot, msg.author)
+        await self.cancel(bot, msg.channel, bot, msg.author, 
+            "RNJesus")
 
 
     @classmethod
     async def cancel(cls, bot:Red, channel:discord.TextChannel,
-            canceler:discord.Member, canceled_user:discord.Member):
+            canceler:discord.Member, canceled_user:discord.Member,
+            reason: str):
         """Cancel someone, they deserve it.
 
         Parameters
@@ -55,6 +57,8 @@ class CanceledJoke(Joke):
             himself)
         canceled_user: discord.Member
             The user being canceled. If a bot the canceler is canceled instead.
+        reason: str
+            The reason to which someone is canceled.
         """
         # Make the message and figure out who is being canceled
         contents = dict(title = "Canceled!")
@@ -64,7 +68,7 @@ class CanceledJoke(Joke):
             canceled_user = canceler
         else:
             contents["description"] = f"{canceled_user.mention}, "\
-                    f"you're canceled."
+                    f"you're canceled because:\n**{reason}**."
         # Cancel them
         counter = await bot._conf.member(canceled_user).cancel_counter()
         await bot._conf.member(canceled_user).cancel_counter.set(counter + 1)
