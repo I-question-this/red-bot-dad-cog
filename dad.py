@@ -474,8 +474,9 @@ class Dad(commands.Cog):
 
     @commands.guild_only()
     @commands.command(aliases=["youre_canceled", "youre_cancelled",
-        "cancels", "cancela", "canceled", "cancelled"])
-    async def canceled(self, ctx:commands.Context, member:discord.Member):
+        "cancels", "cancela", "cancelled"])
+    async def canceled(self, ctx:commands.Context, 
+            member:discord.Member,  *words):
         """Cancel someone, they deserve it.
         (cancel is a reserved command in RedBot)
 
@@ -483,8 +484,14 @@ class Dad(commands.Cog):
         ----------
         member: discord.Member
             The user to cancel.
+        reason: str
+            The reason to which a user is to be cancelled.
         """
-        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member)
+        reason = " ".join(words)
+        if len(reason) == 0:
+            reason = f"You're a disappointment to "\
+                f"{self.bot.user.mention}"
+        await CanceledJoke.cancel(self, ctx.channel, ctx.author, member, reason)
 
 
     @commands.guild_only()
