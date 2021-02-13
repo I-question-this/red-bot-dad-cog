@@ -474,8 +474,9 @@ class Dad(commands.Cog):
 
     @commands.guild_only()
     @commands.command(aliases=["youre_canceled", "youre_cancelled",
-        "cancels", "cancela", "canceled", "cancelled"])
-    async def canceled(self, ctx:commands.Context, member:discord.Member):
+        "cancels", "cancela", "cancelled"])
+    async def canceled(self, ctx:commands.Context, 
+            member:discord.Member,  *words):
         """Cancel someone, they deserve it.
         (cancel is a reserved command in RedBot)
 
