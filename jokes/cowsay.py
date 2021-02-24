@@ -25,7 +25,13 @@ class CowSayJoke(Joke):
     def cowsay_characters() -> list:
         """Return the list of cowsay characters"""
         res = subprocess.run(("cowsay", "-l"), capture_output=True)
-        return res.stdout.decode("utf-8").split()
+        # Remove the first line of "Cow files in /usr/share/cows:"
+        lines_of_cows = res.stdout.decode("utf-8").split("\n")[1:]
+        # Break up each line of cow files into a single string
+        cows = []
+        for l in lines_of_cows:
+            cows.extend(l.split())
+        return cows
 
 
     @staticmethod
