@@ -24,14 +24,26 @@ class NoSuchOption(Exception):
 class Joke(ABC):
     LOG = logging.getLogger("red.dad")
 
+    @classmethod
+    def __log_star(cls, log_method, guild:discord.Guild, 
+            jokester:discord.Member, reason:str) -> None:
+        log_method(
+                f"{cls.__name__.capitalize()}: "\
+                f"In \"{guild.name if guild else None}\"--"\
+                f"\"{jokester.display_name if jokester else None}\" "\
+                f"-> \"{reason}\"")
+
+
+    @classmethod
+    def log_error(cls, guild:discord.Guild, 
+            jokester:discord.Member, reason:str) -> None:
+        cls.__log_star(cls.LOG.error, guild, jokester, reason)
+
 
     @classmethod
     def log_info(cls, guild:discord.Guild, jokester:discord.Member, 
             reason:str) -> None:
-        cls.LOG.info(f"{cls.__name__.capitalize()}: "\
-                f"In \"{guild.name}\"--"\
-                f"\"{jokester.display_name if jokester else None}\" "\
-                f"-> \"{reason}\"")
+        cls.__log_star(cls.LOG.info, guild, jokester, reason)
 
 
     def __init__(self, name:str, default_chance:float):
