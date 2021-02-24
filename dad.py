@@ -370,22 +370,24 @@ class Dad(commands.Cog):
 
 
     @commands.command()
-    async def cowsay(self, ctx:commands.Context, message:str, 
-            character:str="default"):
+    async def cowsay(self, ctx:commands.Context, *words):
         """Cowsay a message
         Parameters
         ----------
-        message: str
-            The message to cowsay
-        character: str
-            The character to put the message into. Default is cow
+        *words: str
+            Any number of words for to cowsay.
+            If the last word is a valid cowsay character it will
+            dictate the cow to use, otherwise it will be the "default".
         """
-        if character in CowSayJoke.cowsay_characters():
-            await ctx.channel.send(
-                    CowSayJoke.construct_cowsay(character, message))
+        if words[-1] in CowSayJoke.cowsay_characters():
+            character = words[-1]
+            text = " ".join(words[0:-1])
         else:
-            await ctx.channel.send(f"'{character}' is not a valid cowsay "\
-                    "character")
+            character = "default"
+            text = " ".join(words)
+
+        await ctx.channel.send(
+                CowSayJoke.construct_cowsay(character, text))
 
 
     @commands.command()
