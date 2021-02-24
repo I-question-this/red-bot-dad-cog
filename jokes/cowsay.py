@@ -46,7 +46,11 @@ class CowSayJoke(Joke):
         """
         res = subprocess.run(("cowsay", "-f", name, message), 
                 capture_output=True)
-        return f"```{res.stdout.decode('utf-8')}```"
+        if res.returncode == 0:
+            return f"```{res.stdout.decode('utf-8')}```"
+        else:
+            CowSayJoke.log_error(None, None, res.stderr)
+            return "Cowsay failed to run, contact administrator"
 
 
     async def _make_verbal_joke(self, bot: Red, msg: discord.Message) -> bool:
