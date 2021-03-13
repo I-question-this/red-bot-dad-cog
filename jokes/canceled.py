@@ -37,7 +37,7 @@ class CanceledJoke(Joke):
         """
         # Cancel the message author
         await self.cancel(bot, msg.channel, bot, msg.author, 
-            "RNJesus")
+            "RNGesus")
 
 
     @classmethod
