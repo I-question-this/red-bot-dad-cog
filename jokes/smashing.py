@@ -4,7 +4,7 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, SMASHING_DIR
+from ..images import random_image_url_in_category
 
 
 class SmashingJoke(Joke):
@@ -46,15 +46,9 @@ class SmashingJoke(Joke):
         else:
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Construct our response
-            response = {}
-            # Pick random gif
-            smashing_gif = random_image(SMASHING_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{smashing_gif.filename}")
-            # Send embed and smashing gif
-            await msg.channel.send(embed=embed, file=smashing_gif)
+            # Send a random smashing image
+            await msg.channel.send(
+                    random_image_url_in_category("smashing"))
             # Return success
             return True
 
