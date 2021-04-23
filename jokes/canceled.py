@@ -5,7 +5,7 @@ from redbot.core.bot import Red
 
 from .joke import Joke
 from .favoritism import FavoritismJoke
-from .util import random_image, CANCELED_DIR
+from ..images import random_image_url_in_category
 
 
 class CanceledJoke(Joke):
@@ -81,7 +81,6 @@ class CanceledJoke(Joke):
             await FavoritismJoke.add_points_to_member(bot, canceler, -10)
         # Send the message
         embed = discord.Embed.from_dict(contents)
-        canceled_image = random_image(CANCELED_DIR)
-        embed.set_image(url=f"attachment://{canceled_image.filename}")
-        await channel.send(embed=embed, file=canceled_image)
+        embed.set_image(url=random_image_url_in_category("cancelled"))
+        await channel.send(embed=embed)
 
