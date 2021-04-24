@@ -5,6 +5,7 @@ import os
 import random
 random.seed()
 import requests
+import time
 from typing import Iterable
 
 # Set up the file path to the json file which acts as our database.
@@ -107,6 +108,8 @@ def backup_images(backup_dir:str, quiet:bool=False) -> None:
         os.mkdir(backup_dir)
     
     for img in IMAGES:
+        # Wait for a literal second
+        time.sleep(1)
         # Check URL
         response = requests.get(img["url"])
 
