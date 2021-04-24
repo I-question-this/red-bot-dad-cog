@@ -4,7 +4,6 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, SMASHING_DIR
 
 class BeckyJoke(Joke):
     def __init__(self):
