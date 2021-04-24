@@ -34,6 +34,9 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
  3. Edit `jokes/__init__.py` to import your joke and add an instance of it to the `JOKES` dictionary
   - The proper key for the new instance is "JokeNameJoke"
  4. Add a short description of this joke to this README.
+ 5. GIFs are added via url and are categorized. Add the appropriate category to 
+existing GIFs and new GIFs with the
+images.py script.
 
 ### Why This Structure?
 The purpose is to have a standardized method of turning a user's message into a joke. 
