@@ -9,13 +9,14 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
 from typing import List
 
+from .images import random_image_url_in_category
 from .jokes.canceled import CanceledJoke
 from .jokes.chores import ChoreJoke
 from .jokes.cowsay import CowSayJoke
 from .jokes.favoritism import FavoritismJoke
 from .jokes.joke import Joke, NoSuchOption
 from .jokes.thats_fair import ThatsFairJoke
-from .jokes.util import OptionType, random_image, UPGRADES_DIR
+from .jokes.util import OptionType
 from .version import __version__, Version
 
 
@@ -352,7 +353,7 @@ class Dad(commands.Cog):
                 upgrades_image = random_image(UPGRADES_DIR)
                 guild_embed = discord.Embed.from_dict(guild_contents)
                 guild_embed.set_image(
-                        url=f"attachment://{upgrades_image.filename}")
+                        url=random_image_url_in_category("upgrades"))
                 if guild.system_channel:
                     await guild.system_channel.send(
                             embed=guild_embed, file=upgrades_image)
