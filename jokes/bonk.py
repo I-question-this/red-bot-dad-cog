@@ -5,7 +5,8 @@ from redbot.core.bot import Red
 
 from .joke import Joke
 from .favoritism import FavoritismJoke
-from .util import random_image, BONK_DIR
+from ..images import random_image_url_in_category
+
 
 class BonkJoke(Joke):
     def __init__(self):
@@ -48,13 +49,9 @@ class BonkJoke(Joke):
             self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {"title":"BONK!"}
-            # Pick random gif
-            bonk_gif = random_image(BONK_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{bonk_gif.filename}")
-            # Send embed and bonk gif
-            await msg.channel.send(embed=embed, file=bonk_gif)
+            # Pick random bonk gif
+            await msg.channel.send(
+                    random_image_url_in_category("bonk"))
             # Return success
             return True
 
