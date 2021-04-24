@@ -4,7 +4,7 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, STICKBUG_DIR
+from ..images import random_image_url_in_category
 
 
 class StickbugJoke(Joke):
@@ -47,15 +47,9 @@ class StickbugJoke(Joke):
         else:
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Construct our response
-            response = {}
-            # Pick random gif
-            stickbug_gif = random_image(STICKBUG_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{stickbug_gif.filename}")
             # Send embed and stickbug gif
-            await msg.channel.send(embed=embed, file=stickbug_gif)
+            await msg.channel.send(
+                    random_image_url_in_category("salute"))
             # Return success
             return True
 
