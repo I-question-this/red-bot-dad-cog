@@ -6,7 +6,7 @@ from redbot.core import checks, commands, Config
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, SALUTES_DIR
+from ..images import random_image_url_in_category
 
 
 class RankJoke(Joke):
@@ -71,12 +71,8 @@ class RankJoke(Joke):
             # Log joke
             self.log_info(msg.guild, msg.author, match)
             # Pick random salute gif
-            salute_gif = random_image(SALUTES_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{salute_gif.filename}")
-            # Send embed and salute gif
-            await msg.channel.send(embed=embed, file=salute_gif)
+            await msg.channel.send(
+                    random_image_url_in_category("salute"))
             # Return success
             return True
 
