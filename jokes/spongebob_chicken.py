@@ -4,7 +4,7 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, SPONGEBOB_CHICKEN_DIR
+from ..images import random_image_url_in_category
 
 
 class SpongebobChickenJoke(Joke):
@@ -39,15 +39,9 @@ class SpongebobChickenJoke(Joke):
             return False
         # LoG jOkE
         self.log_info(msg.guild, msg.author, "GoTeM")
-        # ConStRuCt oUr ReSpOnSe
-        response = {"description":self.chicken_case(msg.content)}
-        # PiCk RaNdOm GiF
-        spongebob_gif = random_image(SPONGEBOB_CHICKEN_DIR)
-        # CoNsTrUcT eMbEd
-        embed = discord.Embed.from_dict(response)
-        embed.set_image(url=f"attachment://{spongebob_gif.filename}")
-        # SeNd EmBeD aNd sPoNgEbOb cHiCkEn GiF
-        await msg.channel.send(embed=embed, file=spongebob_gif)
+        # SeNd ShOnGeBoB ChIcKeN gIf
+        await msg.channel.send(
+                random_image_url_in_category("SpOnGeBoB"))
         # ReTuRn SuCcSeSs
         return True
 
