@@ -4,7 +4,7 @@ import re
 from redbot.core.bot import Red
 
 from .joke import Joke
-from .util import random_image, SOCIETY_DIR
+from ..images import random_image_url_in_category
 
 
 class SocietyJoke(Joke):
@@ -61,13 +61,9 @@ class SocietyJoke(Joke):
             # Second send an appropriate gif
             # Construct our response
             response = {}
-            # Pick random gif
-            society_gif = random_image(SOCIETY_DIR)
-            # Construct embed
-            embed = discord.Embed.from_dict(response)
-            embed.set_image(url=f"attachment://{society_gif.filename}")
-            # Send embed a society gif
-            await msg.channel.send(embed=embed, file=society_gif)
+            # Pick random society gif
+            await msg.channel.send(
+                    random_image_url_in_category("society"))
             # Return success
             return True
 
