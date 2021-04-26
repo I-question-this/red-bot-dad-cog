@@ -1,12 +1,14 @@
 from collections import defaultdict
 import datetime
 import discord
+from discord.ext import tasks
 import logging
 import random
 random.seed()
 from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
+import time
 from typing import List
 
 from .images import random_image_url_in_category
@@ -21,11 +23,19 @@ from .version import __version__, Version
 
 
 LOG = logging.getLogger("red.dad")
-_DEFAULT_GLOBAL = {"last_seen_version_number": None}
+_DEFAULT_GLOBAL = {
+    "last_seen_version_number": None,
+    "flat_fuck_friday_clip":\
+            "https://www.youtube.com/watch?v=A5U8ypHq3BU",
+    "new_day_gmt_hour_start": 12,
+    "last_rolled_clip_date": None}
 _DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
         "fair_child": None}
 _DEFAULT_MEMBER = {"points": 0, "cancel_counter": 0}
 
+
+def tm_struct_to_string(tm_struct):
+    return f"{tm_struct.tm_year}/{tm_struct.tm_mon}/{tm_struct.tm_mday}"
 
 
 class Dad(commands.Cog):
@@ -87,6 +97,9 @@ class Dad(commands.Cog):
 
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
+
+        # Start the auto post task
+        self.roll_the_clip_loop.start()
 
 
     # Helper commands
@@ -724,3 +737,90 @@ class Dad(commands.Cog):
         )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
+    @commands.is_owner()
+    @dad_settings.command()
+    async def set_new_day_gmt_hour_start(self, ctx: commands.Context, 
+            hour:int) -> None:
+        """Sets what hour, in GMT time, to the day starts according to Dad.
+        Parameters
+        ----------
+        hour: int
+            The hour in which to a new day is recognized to have started.
+        """
+        if not (0 <= hour <= 23):
+            contents = dict(
+                    title = "Set GMT New Day Hour Start: Failure",
+                    description = f"Must be value [0,23]"
+                    )
+        else:
+            await self._conf.new_day_gmt_hour_start.set(hour)
+            LOG.info(f"GMT New Day Hour Start set to {hour}")
+            contents = dict(
+                    title = "Set GMT New Day Hour Start: Success",
+                    description = f"GMT New Day Hour Start set to {hour}"
+                    )
+        embed = discord.Embed.from_dict(contents)
+        await ctx.send(embed=embed)
+
+    @commands.guild_only()
+    @commands.admin()
+    @commands.group()
+    async def flat_fuck_friday(self, ctx:commands.Context) -> None:
+        """Flat Fuck Friday commands"""
+
+
+    @flat_fuck_friday.command(name="roll_the_clip")
+    async def roll_the_clip_command(self, ctx: commands.Context) -> None:
+        """Roll the clip"""
+        if not await self.roll_the_clip_for_a_guild(ctx.guild):
+            contents = dict(
+                    title = "Roll The Clip: Failure",
+                    description = "Lacks Permissions to Send Messages in "\
+                                  "System Channel"
+                    )
+            await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    async def roll_the_clip_for_a_guild(self, guild: discord.Guild) -> bool:
+        try:
+            # Roll the clip
+            message_txt = "ROLL THE CLIP!!!\n"
+            message_txt += await self._conf.flat_fuck_friday_clip()
+            await guild.system_channel.send(message_txt)
+            changed_server_icon = False
+            LOG.info(f"Flat Fuck Friday: {guild.name}: Changed Server Icon: "
+                     f"{changed_server_icon}")
+            return True
+        except discord.errors.Forbidden:
+            LOG.info(f"Flat Fuck Friday: {guild.name}: Permission Denied")
+            return False
+
+
+    @tasks.loop(minutes=15)
+    async def roll_the_clip_loop(self):
+        #check if it's even Friday
+        if time.gmtime().tm_wday != 4:
+            return
+
+        last_rolled_clip_date = await self._conf.last_rolled_clip_date()
+        todays_date = tm_struct_to_string(time.gmtime())
+        if last_rolled_clip_date == todays_date:
+            return
+
+        #check if it's too early to post
+        if time.gmtime().tm_hour <\
+                await self._conf.new_day_gmt_hour_start():
+            return
+
+        # Roll the clip for each guild
+        LOG.info("Roll the Clip!")
+        for guild in self.bot.guilds:
+            await self.roll_the_clip_for_a_guild(guild)
+
+        # Set the last rolled clip to today
+        await self._conf.last_rolled_clip_date.set(todays_date)
+       
+
+    @roll_the_clip_loop.before_loop
+    async def before_roll_the_clip_loop(self):
+        await self.bot.wait_until_ready()
