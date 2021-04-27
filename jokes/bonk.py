@@ -49,9 +49,11 @@ class BonkJoke(Joke):
             self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {"title":"BONK!"}
-            # Pick random bonk gif
-            await msg.channel.send(
-                    random_image_url_in_category("bonk"))
+            # Construct embed
+            embed = discord.Embed.from_dict(response)
+            embed.set_image(url=random_image_url_in_category("bonk"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 

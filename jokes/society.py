@@ -21,7 +21,9 @@ class SocietyJoke(Joke):
             "gamer",
             "rise up",
             "rising up",
-            "bottom text"
+            "bottom text",
+            "fortnite",
+            "v(-)?bucks"
         ]
         self.society_re = re.compile("|".join(society_phrases), re.IGNORECASE)
 
@@ -58,12 +60,11 @@ class SocietyJoke(Joke):
             else:
                 await msg.add_reaction("🤡")
 
-            # Second send an appropriate gif
-            # Construct our response
-            response = {}
-            # Pick random society gif
-            await msg.channel.send(
-                    random_image_url_in_category("society"))
+            # Construct embed
+            embed = discord.Embed.from_dict({})
+            embed.set_image(url=random_image_url_in_category("society"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 

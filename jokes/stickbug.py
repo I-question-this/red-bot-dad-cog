@@ -47,9 +47,11 @@ class StickbugJoke(Joke):
         else:
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Send embed and stickbug gif
-            await msg.channel.send(
-                    random_image_url_in_category("salute"))
+            # Construct embed
+            embed = discord.Embed.from_dict({})
+            embed.set_image(url=random_image_url_in_category("stickbug"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 
