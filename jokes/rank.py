@@ -64,15 +64,16 @@ class RankJoke(Joke):
             # No joke was possible, stop
             return False
         else:
-            # Construct our response
-            response = {}
-            response["title"] = f"{match.group('rank').capitalize()} "\
-                    f"{match.group('title').capitalize()}"
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Pick random salute gif
-            await msg.channel.send(
-                    random_image_url_in_category("salute"))
+            # Construct our response
+            response = {"title": f"{match.group('rank').capitalize()} "\
+                                 f"{match.group('title').capitalize()}"}
+            # Construct embed
+            embed = discord.Embed.from_dict(response)
+            embed.set_image(url=random_image_url_in_category("salute"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 
