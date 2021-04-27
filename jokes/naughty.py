@@ -44,9 +44,11 @@ class NaughtyJoke(Joke):
             self.log_info(msg.guild, msg.author, match)
             # Construct our response
             response = {"title":"Children shouldn't swear"}
-            # Pick random naughty gif
-            await msg.channel.send(
-                    random_image_url_in_category("naughty"))
+            # Construct embed
+            embed = discord.Embed.from_dict(response)
+            embed.set_image(url=random_image_url_in_category("naughty"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 

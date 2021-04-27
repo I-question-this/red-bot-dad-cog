@@ -46,9 +46,11 @@ class SmashingJoke(Joke):
         else:
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Send a random smashing image
-            await msg.channel.send(
-                    random_image_url_in_category("smashing"))
+            # Construct embed
+            embed = discord.Embed.from_dict({})
+            embed.set_image(url=random_image_url_in_category("smashing"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 

@@ -51,11 +51,11 @@ class SimplyJoke(Joke):
         else:
             # Log joke
             self.log_info(msg.guild, msg.author, match)
-            # Construct our response
-            response = {}
-            # Pick random lord of the rings gif
-            await msg.channel.send(
-                    random_image_url_in_category("simply"))
+            # Construct embed
+            embed = discord.Embed.from_dict({})
+            embed.set_image(url=random_image_url_in_category("simply"))
+            # Send embed
+            await msg.channel.send(embed=embed)
             # Return success
             return True
 

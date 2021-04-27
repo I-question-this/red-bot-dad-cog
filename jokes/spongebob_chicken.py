@@ -39,9 +39,13 @@ class SpongebobChickenJoke(Joke):
             return False
         # LoG jOkE
         self.log_info(msg.guild, msg.author, "GoTeM")
-        # SeNd ShOnGeBoB ChIcKeN gIf
-        await msg.channel.send(
-                random_image_url_in_category("SpOnGeBoB"))
+        # ConStRuCt oUr ReSpOnSe
+        response = {"description":self.chicken_case(msg.content)}
+        # CoNsTrUcT eMbEd
+        embed = discord.Embed.from_dict(response)
+        embed.set_image(url=random_image_url_in_category("SpOnGeBoB"))
+        # SeNd EmBeD
+        await msg.channel.send(embed=embed)
         # ReTuRn SuCcSeSs
         return True
 
