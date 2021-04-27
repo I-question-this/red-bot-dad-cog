@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import logging
 import os
 import random
 random.seed()
 import requests
 import time
 from typing import Iterable
+
+LOG = logging.getLogger("red.dad")
 
 # Set up the file path to the json file which acts as our database.
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +52,20 @@ def random_image_url_in_category(category:str) -> str:
     str
         The url of the selected image.
     """
-    return random.choice(list(image_urls_in_category(category)))
+    matching_urls = list(image_urls_in_category(category))
+    url = ""
+    while len(matching_urls) > 0:
+        url = random.choice(matching_urls)
+        matching_urls.remove(url)
+        # Test url
+        response = requests.get(url)
+        if response.ok:
+            # This url is okay, so send it
+            LOG.info(f"Good URL: {url}")
+            return url
+        else:
+            LOG.error(f"Bad URL: {url}")
+    return url
 
 
 def add_url(url:str, categories:list[str]) -> None:
