@@ -850,36 +850,40 @@ class Dad(commands.Cog):
                 os.mkdir(str(guild_folder))
             # Save a backup of the server icon
             icon_backup = guild_folder.joinpath("backup")
-            with open(str(icon_backup), "wb") as fout:
-                await guild.icon_url.save(fout)
-            # Change the server icon
             try:
-                here_dir = os.path.dirname(os.path.abspath(__file__))
-                # Check if animated icons are allowed
-                if "ANIMATED_ICON" in guild.features:
-                    flat_icon_name = "flat_fuck_friday.gif"
-                else:
-                    flat_icon_name = "flat_fuck_friday.jpg"
-                flat_icon_path = os.path.join(here_dir, flat_icon_name)
-                # Read in the icon data
-                with open(flat_icon_path, "rb") as fin:
-                    flat_icon = fin.read()
-                # Change the server icon
-                await guild.edit(icon=flat_icon, 
-                                 reason="FLAT FUCK FRIDAY")
-                LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
-                          "Server Icon: Changed")
-                set_icon_image_success = True
-            except discord.errors.Forbidden:
-                LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
-                          "Server Icon: Denied")
-                set_icon_image_success = False
-            except discord.errors.DiscordException as e:
+                with open(str(icon_backup), "wb") as fout:
+                    await guild.icon_url.save(fout)
+                backedup_icon = True
+            except discord.errors.DiscordException:
                 # Usually means that the URL to download the server image
                 # didn't work for some reason.
                 LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
-                         f"Server Icon: {e}")
+                         f"Server Icon: Unable to Backup Icon")
                 set_icon_image_success = False
+                backedup_icon = False
+            # Change the server icon
+            if backedup_icon:
+                try:
+                    here_dir = os.path.dirname(os.path.abspath(__file__))
+                    # Check if animated icons are allowed
+                    if "ANIMATED_ICON" in guild.features:
+                        flat_icon_name = "flat_fuck_friday.gif"
+                    else:
+                        flat_icon_name = "flat_fuck_friday.jpg"
+                    flat_icon_path = os.path.join(here_dir, flat_icon_name)
+                    # Read in the icon data
+                    with open(flat_icon_path, "rb") as fin:
+                        flat_icon = fin.read()
+                    # Change the server icon
+                    await guild.edit(icon=flat_icon, 
+                                     reason="FLAT FUCK FRIDAY")
+                    LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                              "Server Icon: Changed")
+                    set_icon_image_success = True
+                except discord.errors.Forbidden:
+                    LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                              "Server Icon: Denied")
+                    set_icon_image_success = False
 
         return post_url_success, set_icon_image_success
 
