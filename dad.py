@@ -874,6 +874,12 @@ class Dad(commands.Cog):
                 LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
                           "Server Icon: Denied")
                 set_icon_image_success = False
+            except discord.errors.DiscordException as e:
+                # Usually means that the URL to download the server image
+                # didn't work for some reason.
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                         f"Server Icon: {e}")
+                set_icon_image_success = False
 
         return post_url_success, set_icon_image_success
 
