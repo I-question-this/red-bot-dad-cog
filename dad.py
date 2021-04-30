@@ -34,7 +34,7 @@ _DEFAULT_GUILD = {
     "favorite_child": None,
     "hated_child": None,
     "fair_child": None,
-    "flat_fuck_img_change": False}
+    "flat_fuck_img_change": True}
 _DEFAULT_MEMBER = {"points": 0, "cancel_counter": 0}
 
 
@@ -884,7 +884,8 @@ class Dad(commands.Cog):
         a Friday morning.
         """
         # Check if it's even Friday
-        if datetime.datetime.utcnow().weekday() != 5:
+        # 0 is Monday, for this part of datetime
+        if datetime.datetime.utcnow().weekday() != 4:
             return
 
         last_rolled_clip_date = await self._conf.last_rolled_clip_date()
@@ -963,7 +964,8 @@ class Dad(commands.Cog):
         a Saturday morning.
         """
         # Check if it's even Saturday
-        if datetime.datetime.utcnow().weekday() != 6:
+        # 0 is Monday, for this part of datetime
+        if datetime.datetime.utcnow().weekday() != 5:
             return
 
         last_unrolled_clip_date = await self._conf.last_unrolled_clip_date()
