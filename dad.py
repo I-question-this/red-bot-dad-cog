@@ -958,11 +958,15 @@ class Dad(commands.Cog):
             try:
                 # Change the server icon
                 await guild.edit(icon=icon, reason="BUMPY VIRGIN SATURDAY")
-                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "
-                          "Icon: Success")
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Success")
             except discord.errors.Forbidden:
-                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "
-                          "Icon: Failure")
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Failure")
+                error_occurred = True
+            except discord.errors.InvalidArgument as e:
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Failure -> {e}")
                 error_occurred = True
 
         return error_occurred
