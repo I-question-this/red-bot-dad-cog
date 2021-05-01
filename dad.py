@@ -952,7 +952,8 @@ class Dad(commands.Cog):
         cdp = cog_data_path(raw_name="Dad")
         guild_folder = cdp.joinpath(str(guild.id))
         icon_backup = guild_folder.joinpath("backup")
-        if icon_backup.exists():
+        if icon_backup.exists() and\
+                await self._conf.guild(guild).flat_fuck_img_change():
             with open(str(icon_backup), "rb") as fin:
                 icon = fin.read()
             try:
