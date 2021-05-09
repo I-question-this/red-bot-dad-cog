@@ -24,6 +24,13 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
 + Runs Cowsay for your pleasure! (note this means that the cowsay program must be installed on your system)
 + Dad supports cancel culture, and will allow his children to cancel each other.
   + He'll rarely cancel random children too.
++ Flat Fuck Friday
+  + Every Friday Dad will celebrate by [rolling the clip](https://www.youtube.com/watch?v=A5U8ypHq3BU) via:
+  + Posting said clip to the "System Channel" of each server he is in.
+  + If allowed, changing the server icon to the appropriate:
+  + jpg ![image](flat_fuck_friday.jpg)
+  + or gif ![image](flat_fuck_friday.gif)
+  + Note that the server image will be restored on Saturday morning via a backup made before the change.
         
 
 ## Adding a New Joke
