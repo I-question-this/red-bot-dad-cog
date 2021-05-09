@@ -1,13 +1,15 @@
 from collections import defaultdict
 import datetime
 import discord
+from discord.ext import tasks
 import logging
+import os
 import random
 random.seed()
 from redbot.core import checks, commands, Config
 from redbot.core.data_manager import cog_data_path
 from redbot.core.bot import Red
-from typing import List
+from typing import List, Tuple
 
 from .images import random_image_url_in_category
 from .jokes.canceled import CanceledJoke
@@ -21,11 +23,19 @@ from .version import __version__, Version
 
 
 LOG = logging.getLogger("red.dad")
-_DEFAULT_GLOBAL = {"last_seen_version_number": None}
-_DEFAULT_GUILD = {"favorite_child": None, "hated_child": None,
-        "fair_child": None}
+_DEFAULT_GLOBAL = {
+    "last_seen_version_number": None,
+    "flat_fuck_friday_clip":\
+        "https://www.youtube.com/watch?v=A5U8ypHq3BU",
+    "new_day_gmt_hour_start": 12,
+    "last_rolled_clip_date": None,
+    "last_unrolled_clip_date": None}
+_DEFAULT_GUILD = {
+    "favorite_child": None,
+    "hated_child": None,
+    "fair_child": None,
+    "flat_fuck_img_change": False}
 _DEFAULT_MEMBER = {"points": 0, "cancel_counter": 0}
-
 
 
 class Dad(commands.Cog):
@@ -87,6 +97,10 @@ class Dad(commands.Cog):
 
         # Shut Up Dad Data
         self.shut_up_variants = ["shut up", "be quiet", "not now"]
+
+        # Start the task loops
+        self.roll_the_clip_loop.start()
+        self.unroll_the_clip_loop.start()
 
 
     # Helper commands
@@ -724,3 +738,270 @@ class Dad(commands.Cog):
         )
         await ctx.send(embed=discord.Embed.from_dict(contents))
 
+    @commands.is_owner()
+    @dad_settings.command()
+    async def set_new_day_gmt_hour_start(self, ctx: commands.Context, 
+            hour:int) -> None:
+        """Sets what hour, in GMT time, to the day starts according to Dad.
+        Parameters
+        ----------
+        hour: int
+            The hour in which to a new day is recognized to have started.
+        """
+        if not (0 <= hour <= 23):
+            contents = dict(
+                    title = "Set GMT New Day Hour Start: Failure",
+                    description = f"Must be value [0,23]"
+                    )
+        else:
+            await self._conf.new_day_gmt_hour_start.set(hour)
+            LOG.info(f"GMT New Day Hour Start set to {hour}")
+            contents = dict(
+                    title = "Set GMT New Day Hour Start: Success",
+                    description = f"GMT New Day Hour Start set to {hour}"
+                    )
+        embed = discord.Embed.from_dict(contents)
+        await ctx.send(embed=embed)
+
+
+    @commands.guild_only()
+    @commands.admin()
+    @commands.group()
+    async def flat_fuck_friday(self, ctx:commands.Context) -> None:
+        """Flat Fuck Friday commands"""
+
+
+    @flat_fuck_friday.command()
+    async def toggle_server_image_change(self, ctx: commands.Context) -> None:
+        """Toggle rather DadBot is allowed (to attempt) to change the sever 
+            image when ROLLING THE CLIP.
+            Note, that you must actually give DadBot permissions to do it
+            if this setting is on.
+        """
+        flat_fuck_img_change = not await self._conf.guild(ctx.guild).\
+                flat_fuck_img_change()
+        await self._conf.guild(ctx.guild).flat_fuck_img_change.\
+                set(flat_fuck_img_change)
+        contents = dict(
+                title = "Flat Fuck Friday Server Image Change",
+                description = f"Set to **{flat_fuck_img_change}**"
+                )
+        await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    @flat_fuck_friday.command(name="roll_the_clip")
+    async def roll_the_clip_command(self, ctx: commands.Context) -> None:
+        """ROLL THE CLIP. Will post the clip in the system channel
+        and change the server image, if allowed."""
+        post_url_success, set_icon_image_success =\
+                await self.roll_the_clip_for_a_guild(ctx.guild)
+        if not post_url_success or not set_icon_image_success:
+            contents = dict(
+                    title = "Roll The Clip: Failure",
+                    description = ""
+                    )
+            contents["description"] += "Unable to post URL in System "\
+                                       "Channel"
+            contents["description"] += "Unable to change server icon"
+            await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    async def roll_the_clip_for_a_guild(self, guild: discord.Guild) -> \
+            Tuple[bool, bool]:
+        """Roll the clip for a specific guild.
+
+        This involves sending the YouTube URL link to the guilds'
+        system channel and, if allowed, change the server icon
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            The guild to perform theses actions on.
+        
+        Returns
+        -------
+        Tuple[bool, bool]:
+            The first bool is if the posting of the YouTube URL was
+            successful.
+            The second bool is if the changing of the server icon was
+            successful. If not allowed, then it will be deemed
+            successful.
+        """
+        try:
+            # Roll the clip
+            message_txt = "ROLL THE CLIP!!!\n"
+            message_txt += await self._conf.flat_fuck_friday_clip()
+            await guild.system_channel.send(message_txt)
+            LOG.info(f"Flat Fuck Friday: {guild.name}: "
+                      "CLIP ROLLED")
+            post_url_success = True
+        except discord.errors.Forbidden:
+            LOG.info(f"Flat Fuck Friday: {guild.name}: "
+                      "System Channel Permission Denied")
+            post_url_success = False
+
+        if not await self._conf.guild(guild).flat_fuck_img_change():
+            set_icon_image_success = True
+        else:
+            # Ensure folder to make server icon backup exists
+            guild_folder = cog_data_path(raw_name=self.__class__.__name__).\
+                    joinpath(str(guild.id))
+            if not guild_folder.exists():
+                os.mkdir(str(guild_folder))
+            # Save a backup of the server icon
+            icon_backup = guild_folder.joinpath("backup")
+            try:
+                with open(str(icon_backup), "wb") as fout:
+                    await guild.icon_url.save(fout)
+                backedup_icon = True
+            except discord.errors.DiscordException:
+                # Usually means that the URL to download the server image
+                # didn't work for some reason.
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                         f"Server Icon: Unable to Backup Icon")
+                set_icon_image_success = False
+                backedup_icon = False
+            # Change the server icon
+            if backedup_icon:
+                try:
+                    here_dir = os.path.dirname(os.path.abspath(__file__))
+                    # Check if animated icons are allowed
+                    if "ANIMATED_ICON" in guild.features:
+                        flat_icon_name = "flat_fuck_friday.gif"
+                    else:
+                        flat_icon_name = "flat_fuck_friday.jpg"
+                    flat_icon_path = os.path.join(here_dir, flat_icon_name)
+                    # Read in the icon data
+                    with open(flat_icon_path, "rb") as fin:
+                        flat_icon = fin.read()
+                    # Change the server icon
+                    await guild.edit(icon=flat_icon, 
+                                     reason="FLAT FUCK FRIDAY")
+                    LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                              "Server Icon: Changed")
+                    set_icon_image_success = True
+                except discord.errors.Forbidden:
+                    LOG.info(f"Flat Fuck Friday: {guild.name}: Changed "
+                              "Server Icon: Denied")
+                    set_icon_image_success = False
+
+        return post_url_success, set_icon_image_success
+
+
+    @tasks.loop(minutes=15)
+    async def roll_the_clip_loop(self):
+        """Determine if it's time to ROLL THE CLIP for the first time on
+        a Friday morning.
+        """
+        # Check if it's even Friday
+        # 0 is Monday, for this part of datetime
+        if datetime.datetime.utcnow().weekday() != 4:
+            return
+
+        last_rolled_clip_date = await self._conf.last_rolled_clip_date()
+        todays_date_str = str(datetime.datetime.utcnow().strftime("%y/%m/%d"))
+        if last_rolled_clip_date == todays_date_str:
+            return
+
+        # Check if it's too early to post
+        if datetime.datetime.utcnow().hour <\
+                await self._conf.new_day_gmt_hour_start():
+            return
+
+        # Roll the clip for each guild
+        LOG.info("Roll the Clip!")
+        for guild in self.bot.guilds:
+            await self.roll_the_clip_for_a_guild(guild)
+
+        # Set the last rolled clip to today
+        await self._conf.last_rolled_clip_date.set(todays_date_str)
+       
+
+    @roll_the_clip_loop.before_loop
+    async def before_roll_the_clip_loop(self):
+        await self.bot.wait_until_ready()
+
+
+    @flat_fuck_friday.command(name="unroll_the_clip")
+    async def unroll_the_clip_command(self, ctx: commands.Context) -> None:
+        """UNRoll the clip. Won't remove the posted clip, but will set
+        the server icon back to what it was before Dad changed it, if
+        he changed it at all.
+        """
+        if await self.unroll_the_clip_for_a_guild(ctx.guild):
+            contents = dict(
+                    title = "UNRoll The Clip: Failure",
+                    description = "Lacks Permissions to Send Messages in "\
+                                  "System Channel"
+                    )
+            await ctx.send(embed=discord.Embed.from_dict(contents))
+
+
+    async def unroll_the_clip_for_a_guild(self, guild: discord.Guild) -> bool:
+        """Undo server changes to the specified guild.
+        This means to set the server image back to what it was before it
+        was changed to Flat Fuck Friday.
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            The guild to undo Flat Fuck Friday actions on.
+        """
+        error_occurred = False
+
+        cdp = cog_data_path(raw_name="Dad")
+        guild_folder = cdp.joinpath(str(guild.id))
+        icon_backup = guild_folder.joinpath("backup")
+        if icon_backup.exists() and\
+                await self._conf.guild(guild).flat_fuck_img_change():
+            with open(str(icon_backup), "rb") as fin:
+                icon = fin.read()
+            try:
+                # Change the server icon
+                await guild.edit(icon=icon, reason="BUMPY VIRGIN SATURDAY")
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Success")
+            except discord.errors.Forbidden:
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Failure")
+                error_occurred = True
+            except discord.errors.InvalidArgument as e:
+                LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
+                         f"Icon: Failure -> {e}")
+                error_occurred = True
+
+        return error_occurred
+
+
+    @tasks.loop(minutes=15)
+    async def unroll_the_clip_loop(self):
+        """Determine if it's time to UN-ROLL THE CLIP for the first time on
+        a Saturday morning.
+        """
+        # Check if it's even Saturday
+        # 0 is Monday, for this part of datetime
+        if datetime.datetime.utcnow().weekday() != 5:
+            return
+
+        last_unrolled_clip_date = await self._conf.last_unrolled_clip_date()
+        todays_date_str = str(datetime.datetime.utcnow().strftime("%y/%m/%d"))
+        if last_unrolled_clip_date == todays_date_str:
+            return
+
+        # Check if it's too early to post
+        if datetime.datetime.utcnow().hour <\
+                await self._conf.new_day_gmt_hour_start():
+            return
+
+        # Roll the clip for each guild
+        LOG.info("UN-Roll the Clip!")
+        for guild in self.bot.guilds:
+            await self.unroll_the_clip_for_a_guild(guild)
+
+        # Set the last rolled clip to today
+        await self._conf.last_unrolled_clip_date.set(todays_date_str)
+       
+
+    @unroll_the_clip_loop.before_loop
+    async def before_unroll_the_clip_loop(self):
+        await self.bot.wait_until_ready()
