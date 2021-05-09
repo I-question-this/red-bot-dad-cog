@@ -34,7 +34,7 @@ _DEFAULT_GUILD = {
     "favorite_child": None,
     "hated_child": None,
     "fair_child": None,
-    "flat_fuck_img_change": True}
+    "flat_fuck_img_change": False}
 _DEFAULT_MEMBER = {"points": 0, "cancel_counter": 0}
 
 
