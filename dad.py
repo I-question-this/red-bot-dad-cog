@@ -1005,3 +1005,25 @@ class Dad(commands.Cog):
     @unroll_the_clip_loop.before_loop
     async def before_unroll_the_clip_loop(self):
         await self.bot.wait_until_ready()
+
+    @commands.command(aliases=["what_is_today", 
+                              "how_many_days_till_christmas",
+                              "when_is_christmas"])
+    async def what_day_is_it(self, ctx:commands.Context):
+        """Dad will tell you what day it is, in terms of christmas"""
+        # Get today
+        today = datetime.date.today()
+        # Christmas of this year
+        christmas = datetime.date(today.year, 12, 25)
+        # Christmas delta
+        delta = christmas - today
+        if delta.days < 0:
+            # Christmas of next year
+            christmas = datetime.date(today.year+1, 12, 25)
+            # Christmas delta
+            delta = christmas - today
+
+        # Send today in term of Chirstmas
+        await ctx.send("Today is Christmas" +
+                       " Eve" * delta.days +
+                       ".")

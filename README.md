@@ -31,7 +31,11 @@ This is meant to be a custom cog to be added to a [Red DiscordBot](https://githu
   + jpg ![image](flat_fuck_friday.jpg)
   + or gif ![image](flat_fuck_friday.gif)
   + Note that the server image will be restored on Saturday morning via a backup made before the change.
-        
++ When is Chirstmas?
+  + Dad will inform users of how many days until Chirstmas via
+  ```python
+  "Chirstmas" + " Eve" * days_until_chirstmas
+  ```
 
 ## Adding a New Joke
 + New jokes can usually be added as a new sub-class of the Joke class in the jokes directory.
