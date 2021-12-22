@@ -72,4 +72,4 @@ class Version:
 
 
 # The version for DadBot
-__version__ = Version(2,2,4)
+__version__ = Version(2,3,0)
