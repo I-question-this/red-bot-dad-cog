@@ -958,7 +958,7 @@ class Dad(commands.Cog):
                 icon = fin.read()
             try:
                 # Change the server icon
-                await guild.edit(icon=icon, reason="BUMPY VIRGIN SATURDAY")
+                await guild.edit(icon=icon, reason="FRIDAY IS OVER")
                 LOG.info(f"Flat Fuck Friday: {guild.name}: Reverted Server "\
                          f"Icon: Success")
             except discord.errors.Forbidden:
