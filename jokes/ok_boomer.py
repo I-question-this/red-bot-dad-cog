@@ -10,16 +10,8 @@ class OkBoomerJoke(Joke):
     def __init__(self):
         """Init for the Okay Boomer joke
 
-        "Okay Boomer" is a dismissive response to old people who think 
-        everything was better in the past and that young people's worries
-        about the present and future are unfounded. If you are offended
-        by "okay boomer" that's probably because it was said to you. If 
-        you were told this in response to "climate change", "health care costs",
-        "police brutality", "proper behavior during a pandemic", 
-        "race issues", "student debt", "vaccines", etc then 
-        take a moment to think about why the person you were talking to
-        decided you were no longer worth talking to. It's probably because
-        you're views are terrible and propagate badness.
+        "Okay Boomer" is a dismissive response to 
+        unsavory and old beliefs.
         Dad would like to parody this by responding to messages containing
         "okay boomer" with emojis spelling out "okay zoomer". It paints 
         perfectly the response of an entitled old person who simultaneously 
